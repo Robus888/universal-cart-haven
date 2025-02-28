@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { motion } from "framer-motion";
+import { toast } from "@/components/ui/use-toast";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -43,14 +44,35 @@ const LoginForm: React.FC = () => {
     },
   });
   
-  const { formState: { isSubmitting } } = form;
+  const { formState: { isSubmitting }, setError } = form;
   
   const onSubmit = async (values: LoginFormValues) => {
     try {
       await login(values.email, values.password);
       // Navigation is handled in the ShopContext after successful login
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed:", error);
+      
+      // Set form errors based on the error message
+      if (error.message?.includes("Invalid login credentials")) {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: "Invalid email or password. Please try again.",
+        });
+        
+        setError("email", { message: "Invalid email or password" });
+        setError("password", { message: "Invalid email or password" });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login error",
+          description: error.message || "An unexpected error occurred",
+        });
+      }
+      
+      // Reset the submitting state to enable the button again
+      form.reset({ email: values.email, password: "" });
     }
   };
   

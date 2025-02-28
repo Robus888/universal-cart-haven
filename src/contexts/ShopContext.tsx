@@ -264,7 +264,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
       
-      if (data.user) {
+      if (data && data.user) {
         await fetchUserProfile(data.user.id);
         
         toast({
@@ -273,29 +273,49 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         
         navigate("/");
+        return; // Return here to prevent further execution
       }
     } catch (error) {
       let message = "Login failed";
       if (error instanceof Error) {
         message = error.message;
       }
+      
       toast({
         variant: "destructive",
         title: "Error",
         description: message,
       });
-      throw error;
+      
+      throw error; // Rethrow the error so the form can handle it
     }
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
-    });
-    navigate("/login");
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        throw error;
+      }
+      
+      setUser(null);
+      
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+      
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+      });
+    }
   };
 
   const register = async (username: string, email: string, password: string) => {
@@ -324,19 +344,25 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: `Welcome, ${username}! Please verify your email if required.`,
         });
         
+        // Don't auto-login, redirect to login page instead
         navigate("/login");
+        return;
+      } else {
+        throw new Error("Failed to create account. Please try again.");
       }
     } catch (error) {
       let message = "Registration failed";
       if (error instanceof Error) {
         message = error.message;
       }
+      
       toast({
         variant: "destructive",
         title: "Error",
         description: message,
       });
-      throw error;
+      
+      throw error; // Rethrow the error so the form can handle it
     }
   };
 

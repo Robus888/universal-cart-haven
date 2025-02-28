@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useShop } from "@/contexts/ShopContext";
 import { useNavigate, NavLink } from "react-router-dom";
@@ -16,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { motion } from "framer-motion";
+import { toast } from "@/components/ui/use-toast";
 
 const registerSchema = z
   .object({
@@ -45,14 +45,43 @@ const RegisterForm: React.FC = () => {
     },
   });
   
-  const { formState: { isSubmitting } } = form;
+  const { formState: { isSubmitting }, setError } = form;
   
   const onSubmit = async (values: RegisterFormValues) => {
     try {
       await register(values.username, values.email, values.password);
-      navigate("/");
-    } catch (error) {
+      toast({
+        title: "Account created successfully",
+        description: "You can now login with your credentials.",
+      });
+      
+      navigate("/login");
+    } catch (error: any) {
       console.error("Registration failed:", error);
+      
+      // Handle specific errors for better user experience
+      if (error.message?.includes("User already registered")) {
+        toast({
+          variant: "destructive",
+          title: "Registration failed",
+          description: "This email is already registered. Please use a different email or login instead.",
+        });
+        setError("email", { message: "This email is already registered" });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Registration error",
+          description: error.message || "An unexpected error occurred",
+        });
+      }
+      
+      // Keep form data except password
+      form.reset({ 
+        username: values.username,
+        email: values.email,
+        password: "",
+        confirmPassword: ""
+      });
     }
   };
   
