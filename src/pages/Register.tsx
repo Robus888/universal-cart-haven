@@ -1,9 +1,21 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import RegisterForm from "@/components/auth/RegisterForm";
 import { motion } from "framer-motion";
+import { useShop } from "@/contexts/ShopContext";
+import { useNavigate } from "react-router-dom";
 
 const Register: React.FC = () => {
+  const { isAuthenticated } = useShop();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <motion.div

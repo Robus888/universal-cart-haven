@@ -54,7 +54,7 @@ type ShopContextType = {
   viewProductDetails: (productId: string) => void;
 };
 
-// Sample product data - limited to 3 products as requested
+// Sample product data
 const sampleProducts: Product[] = [
   {
     id: "1",
@@ -117,6 +117,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [searchQuery, setSearchQueryState] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
   // Check for saved theme preference
@@ -142,10 +143,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Check for active Supabase session on app load
   useEffect(() => {
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      
-      if (data?.session) {
-        await fetchUserProfile(data.session.user.id);
+      try {
+        const { data } = await supabase.auth.getSession();
+        
+        if (data?.session) {
+          await fetchUserProfile(data.session.user.id);
+        }
+        
+        setAuthChecked(true); // Mark auth check as complete regardless of result
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setAuthChecked(true); // Mark auth check as complete even if there was an error
       }
     };
     
@@ -154,8 +162,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session);
+        
         if (event === "SIGNED_IN" && session) {
           await fetchUserProfile(session.user.id);
+          
+          // If user is on login page, redirect to home
+          if (window.location.pathname === "/login" || window.location.pathname === "/register") {
+            navigate("/");
+          }
         } else if (event === "SIGNED_OUT") {
           setUser(null);
         }
@@ -165,7 +180,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
   
   // Fetch user profile from Supabase
   const fetchUserProfile = async (userId: string) => {
@@ -174,7 +189,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error("Error fetching user profile:", error);
@@ -184,11 +199,47 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data) {
         setUser({
           id: data.id,
-          username: data.username,
-          email: data.email,
-          balance: Number(data.balance),
-          is_admin: data.is_admin
+          username: data.username || 'User',
+          email: data.email || '',
+          balance: Number(data.balance) || 0,
+          is_admin: !!data.is_admin
         });
+      } else {
+        // Profile doesn't exist yet, create it
+        const { user } = await supabase.auth.getUser();
+        if (user) {
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert({
+              id: userId,
+              username: user.user_metadata.username || user.email?.split('@')[0] || 'User',
+              email: user.email,
+              balance: 0,
+              is_admin: false
+            });
+            
+          if (insertError) {
+            console.error("Error creating user profile:", insertError);
+            return;
+          }
+          
+          // Fetch the newly created profile
+          const { data: newProfile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", userId)
+            .maybeSingle();
+            
+          if (newProfile) {
+            setUser({
+              id: newProfile.id,
+              username: newProfile.username || 'User',
+              email: newProfile.email || '',
+              balance: Number(newProfile.balance) || 0,
+              is_admin: !!newProfile.is_admin
+            });
+          }
+        }
       }
     } catch (error) {
       console.error("Error in fetchUserProfile:", error);
@@ -217,7 +268,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         toast({
           title: "Successfully logged in",
-          description: `Welcome back, ${data.user.user_metadata.username || 'user'}!`,
+          description: `Welcome back, ${data.user.user_metadata.username || data.user.email?.split('@')[0] || 'user'}!`,
         });
         
         navigate("/");

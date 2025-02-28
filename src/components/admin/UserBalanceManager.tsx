@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Search } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -19,6 +19,7 @@ const UserBalanceManager: React.FC = () => {
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
   // New balance amount to set
@@ -45,6 +46,7 @@ const UserBalanceManager: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
+      
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -52,15 +54,20 @@ const UserBalanceManager: React.FC = () => {
 
       if (error) throw error;
 
-      setUsers(data || []);
-      setFilteredUsers(data || []);
+      // Type checking to ensure data is an array
+      const userProfiles = Array.isArray(data) ? data : [];
+      
+      setUsers(userProfiles);
+      setFilteredUsers(userProfiles);
       
       // Initialize newBalances with current values
       const balances: Record<string, string> = {};
-      data?.forEach(user => {
-        balances[user.id] = user.balance.toString();
+      userProfiles.forEach(user => {
+        balances[user.id] = user.balance?.toString() || "0";
       });
       setNewBalances(balances);
+      
+      console.log("Fetched users:", userProfiles);
     } catch (error) {
       console.error("Error fetching users:", error);
       toast({
@@ -74,15 +81,19 @@ const UserBalanceManager: React.FC = () => {
   };
 
   const handleBalanceChange = (userId: string, value: string) => {
-    setNewBalances({
-      ...newBalances,
-      [userId]: value,
-    });
+    // Ensure value is a valid number or empty string
+    if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
+      setNewBalances({
+        ...newBalances,
+        [userId]: value,
+      });
+    }
   };
 
   const updateBalance = async (userId: string) => {
     try {
-      const newBalance = parseFloat(newBalances[userId]);
+      const newBalanceStr = newBalances[userId] || "0";
+      const newBalance = parseFloat(newBalanceStr);
       
       if (isNaN(newBalance)) {
         toast({
@@ -93,6 +104,7 @@ const UserBalanceManager: React.FC = () => {
         return;
       }
 
+      // Update the balance in Supabase
       const { error } = await supabase
         .from("profiles")
         .update({ balance: newBalance })
@@ -106,8 +118,15 @@ const UserBalanceManager: React.FC = () => {
       });
 
       // Update local state
-      setUsers(
-        users.map((user) =>
+      setUsers(prevUsers =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, balance: newBalance } : user
+        )
+      );
+      
+      // Update filtered users as well
+      setFilteredUsers(prevFiltered =>
+        prevFiltered.map((user) =>
           user.id === userId ? { ...user, balance: newBalance } : user
         )
       );
@@ -121,11 +140,33 @@ const UserBalanceManager: React.FC = () => {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchUsers();
+    setIsRefreshing(false);
+    toast({
+      title: "Refreshed",
+      description: "User list has been refreshed",
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Manage User Balances</CardTitle>
-        <CardDescription>Update user account balances</CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Manage User Balances</CardTitle>
+            <CardDescription>Update user account balances</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="relative mb-6">
@@ -151,15 +192,17 @@ const UserBalanceManager: React.FC = () => {
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-md"
               >
                 <div className="mb-2 sm:mb-0">
-                  <p className="font-medium">{user.username}</p>
-                  <p className="text-sm text-gray-500">{user.email}</p>
+                  <p className="font-medium">{user.username || 'No username'}</p>
+                  <p className="text-sm text-gray-500">{user.email || 'No email'}</p>
+                  <p className="text-xs text-gray-500">Current balance: ${user.balance?.toFixed(2) || '0.00'}</p>
                 </div>
                 <div className="flex items-center space-x-2 w-full sm:w-auto">
                   <Input
-                    type="number"
+                    type="text"
                     value={newBalances[user.id] || ""}
                     onChange={(e) => handleBalanceChange(user.id, e.target.value)}
                     className="w-32"
+                    placeholder="0.00"
                   />
                   <Button onClick={() => updateBalance(user.id)}>Update</Button>
                 </div>

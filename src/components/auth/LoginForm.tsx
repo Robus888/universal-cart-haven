@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useShop } from "@/contexts/ShopContext";
 import { useNavigate, NavLink } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -25,8 +25,15 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const LoginForm: React.FC = () => {
-  const { login } = useShop();
+  const { login, isAuthenticated } = useShop();
   const navigate = useNavigate();
+  
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,7 +48,7 @@ const LoginForm: React.FC = () => {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       await login(values.email, values.password);
-      navigate("/");
+      // Navigation is handled in the ShopContext after successful login
     } catch (error) {
       console.error("Login failed:", error);
     }
