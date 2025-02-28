@@ -1,7 +1,7 @@
 
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Menu, Search, ShoppingCart, Sun, Moon, MenuIcon, X, LogIn, LogOut, User } from "lucide-react";
+import { Menu, Search, ShoppingCart, Sun, Moon, MenuIcon, X, LogIn, LogOut, User, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useShop } from "@/contexts/ShopContext";
@@ -148,6 +148,14 @@ const Navbar: React.FC = () => {
                     <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
                   </div>
                   <DropdownMenuSeparator />
+                  {user?.is_admin && (
+                    <DropdownMenuItem asChild>
+                      <NavLink to="/admin" className="flex items-center cursor-pointer">
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        <span>Admin Panel</span>
+                      </NavLink>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={logout} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
@@ -156,7 +164,7 @@ const Navbar: React.FC = () => {
               </DropdownMenu>
             ) : (
               <NavLink to="/login">
-                <Button variant="default" size="sm">
+                <Button variant="default" size="sm" className="bg-red-600 hover:bg-red-700">
                   <LogIn className="mr-2 h-4 w-4" />
                   Login
                 </Button>

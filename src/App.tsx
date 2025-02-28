@@ -11,6 +11,8 @@ import ProductDetail from "./pages/ProductDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import AdminPanel from "./components/admin/AdminPanel";
+import Announcement from "./components/Announcement";
 
 // Add framer-motion
 import { MotionConfig } from "framer-motion";
@@ -32,12 +34,14 @@ const App = () => {
         <MotionConfig reducedMotion="user">
           <BrowserRouter>
             <ShopProvider>
+              <Announcement />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/admin" element={<AdminPanel />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

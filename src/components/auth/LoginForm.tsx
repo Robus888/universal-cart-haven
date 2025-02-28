@@ -55,12 +55,12 @@ const LoginForm: React.FC = () => {
       transition={{ duration: 0.3 }}
     >
       <div className="mb-6 text-center">
-        <div className="h-16 w-16 bg-shop-blue rounded-2xl mx-auto mb-4 flex items-center justify-center">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12 22V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M20 7L12 12L4 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+        <div className="h-16 w-16 mx-auto mb-4 flex items-center justify-center">
+          <img 
+            src="https://cdn.discordapp.com/attachments/1092192491840737421/1344813833675604019/IMG_4837.png?ex=67c246fb&is=67c0f57b&hm=70a394743fb2a83b82ae74ddfbe72f8a27d3d7c5f0311d47c63cb30a5319b2a1&" 
+            alt="Yowx Mods Shop"
+            className="h-16 w-16 object-cover" 
+          />
         </div>
         <h1 className="text-2xl font-bold">Welcome back</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
@@ -116,7 +116,7 @@ const LoginForm: React.FC = () => {
           
           <Button
             type="submit"
-            className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+            className="w-full bg-red-600 hover:bg-red-700"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Signing in..." : "Sign in"}

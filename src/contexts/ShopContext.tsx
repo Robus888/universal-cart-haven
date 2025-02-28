@@ -12,6 +12,7 @@ export type User = {
   username: string;
   email: string;
   balance: number;
+  is_admin?: boolean;
 };
 
 export type Product = {
@@ -186,6 +187,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           username: data.username,
           email: data.email,
           balance: Number(data.balance),
+          is_admin: data.is_admin
         });
       }
     } catch (error) {
@@ -215,7 +217,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         toast({
           title: "Successfully logged in",
-          description: `Welcome back, ${user?.username}!`,
+          description: `Welcome back, ${data.user.user_metadata.username || 'user'}!`,
         });
         
         navigate("/");
@@ -237,7 +239,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("user");
     toast({
       title: "Logged out",
       description: "You have been successfully logged out",
@@ -359,18 +360,31 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
 
-    if (user.balance < product.price) {
+    const price = product.discountedPrice || product.price;
+    if (user.balance < price) {
       toast({
         variant: "destructive",
         title: "Insufficient balance",
-        description: "You don't have enough balance to purchase this product",
+        description: (
+          <div>
+            <p>You don't have enough balance to purchase this product</p>
+            <a 
+              href="https://t.me/yowxios" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-500 font-semibold hover:underline"
+            >
+              Buy coins now
+            </a>
+          </div>
+        ),
       });
       return false;
     }
 
     try {
       // Update user balance in Supabase
-      const newBalance = user.balance - (product.discountedPrice || product.price);
+      const newBalance = user.balance - price;
       
       const { error: updateError } = await supabase
         .from("profiles")
@@ -394,7 +408,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user_id: user.id,
           product_id: product.id,
           product_name: product.name,
-          amount: product.discountedPrice || product.price
+          amount: price
         });
       
       if (purchaseError) {
@@ -428,7 +442,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const viewProductDetails = (productId: string) => {
-    window.open("https://test2.com", "_blank");
+    window.open("https://t.me/yowxios", "_blank");
   };
 
   const contextValue: ShopContextType = {

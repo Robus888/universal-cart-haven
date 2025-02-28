@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import { useShop } from "@/contexts/ShopContext";
+import { NavLink } from "react-router-dom";
 
 const WalletButton: React.FC = () => {
   const { user } = useShop();
@@ -16,16 +17,16 @@ const WalletButton: React.FC = () => {
   };
   
   const handleWalletClick = () => {
-    window.open("https://shopyowx.com", "_blank");
+    window.open("https://t.me/yowxios", "_blank");
   };
   
   return (
     <Button 
       onClick={handleWalletClick}
-      className="wallet-button"
+      className="wallet-button bg-shop-blue text-white hover:bg-shop-darkBlue flex items-center"
       variant="outline"
     >
-      <Wallet className="h-4 w-4" />
+      <Wallet className="h-4 w-4 mr-2" />
       <span>{user ? formatBalance(user.balance) : "$0.00"}</span>
     </Button>
   );
