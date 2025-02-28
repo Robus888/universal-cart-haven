@@ -1,0 +1,34 @@
+
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Wallet } from "lucide-react";
+import { useShop } from "@/contexts/ShopContext";
+
+const WalletButton: React.FC = () => {
+  const { user } = useShop();
+  
+  const formatBalance = (balance: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(balance);
+  };
+  
+  const handleWalletClick = () => {
+    window.open("https://shopyowx.com", "_blank");
+  };
+  
+  return (
+    <Button 
+      onClick={handleWalletClick}
+      className="wallet-button"
+      variant="outline"
+    >
+      <Wallet className="h-4 w-4" />
+      <span>{user ? formatBalance(user.balance) : "$0.00"}</span>
+    </Button>
+  );
+};
+
+export default WalletButton;

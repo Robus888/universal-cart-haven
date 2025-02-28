@@ -106,4 +106,20 @@
   .feature-list-item svg {
     @apply text-green-500 mt-1 flex-shrink-0;
   }
+  
+  .logo-container {
+    @apply relative h-12 w-12 overflow-hidden;
+  }
+  
+  .logo-image {
+    @apply w-full h-full object-contain;
+  }
+  
+  .shop-logo {
+    @apply h-8 w-auto;
+  }
+  
+  .wallet-button {
+    @apply flex items-center space-x-2 px-3 py-2 rounded-md bg-shop-blue text-white hover:bg-shop-darkBlue transition-colors;
+  }
 }

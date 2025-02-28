@@ -12,7 +12,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { currency, addToCart } = useShop();
+  const { currency, addToCart, viewProductDetails } = useShop();
   
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -26,6 +26,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(product);
+  };
+  
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    viewProductDetails(product.id);
   };
   
   return (
@@ -94,7 +100,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               Add to Cart
             </Button>
             
-            <Button variant="outline" size="icon">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleViewDetails}
+            >
               <Eye className="h-4 w-4" />
             </Button>
           </div>

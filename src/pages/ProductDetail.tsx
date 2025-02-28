@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-import { ShoppingCart, ArrowLeft, Share, Heart, Check, AlertCircle, Truck } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Share, Heart, Check, AlertCircle, Truck, ExternalLink, Eye } from "lucide-react";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, addToCart, currency } = useShop();
+  const { products, addToCart, currency, purchaseProduct, viewProductDetails, user } = useShop();
   
   const product = products.find((p) => p.id === id);
   
@@ -37,6 +37,14 @@ const ProductDetail: React.FC = () => {
       currency: currency,
       minimumFractionDigits: 2
     }).format(price);
+  };
+
+  const handlePurchase = async () => {
+    await purchaseProduct(product);
+  };
+
+  const handleViewDetails = () => {
+    viewProductDetails(product.id);
   };
   
   return (
@@ -78,6 +86,9 @@ const ProductDetail: React.FC = () => {
                 <p className="text-gray-600 dark:text-gray-300 mb-4">{product.category}</p>
               </div>
               <div className="flex space-x-2">
+                <Button variant="outline" size="icon" onClick={handleViewDetails}>
+                  <Eye className="h-4 w-4" />
+                </Button>
                 <Button variant="outline" size="icon">
                   <Share className="h-4 w-4" />
                 </Button>
@@ -106,6 +117,12 @@ const ProductDetail: React.FC = () => {
                 </span>
               )}
             </div>
+            
+            {user && (
+              <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                <p className="text-sm">Your balance: <span className="font-bold">{formatPrice(user.balance)}</span></p>
+              </div>
+            )}
             
             <div className="mb-6">
               <h2 className="text-lg font-semibold mb-2">Description</h2>
@@ -144,14 +161,26 @@ const ProductDetail: React.FC = () => {
               )}
             </div>
             
-            <Button 
-              onClick={() => addToCart(product)} 
-              disabled={product.stock === 0}
-              className="w-full bg-shop-blue hover:bg-shop-darkBlue"
-            >
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              Add to Cart
-            </Button>
+            <div className="space-y-3">
+              <Button 
+                onClick={handlePurchase} 
+                disabled={product.stock === 0 || !user || user.balance < (product.discountedPrice || product.price)}
+                className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Buy Now {user && user.balance < (product.discountedPrice || product.price) && "(Insufficient Balance)"}
+              </Button>
+              
+              <Button 
+                onClick={() => addToCart(product)} 
+                disabled={product.stock === 0}
+                variant="outline"
+                className="w-full"
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Add to Cart
+              </Button>
+            </div>
             
             <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
               <Truck className="h-4 w-4 mr-1" />

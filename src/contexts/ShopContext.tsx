@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Currency = "USD" | "EUR" | "GBP";
 export type Language = "English" | "Spanish" | "French";
@@ -23,6 +24,7 @@ export type Product = {
   stock: number;
   image: string;
   category: string;
+  downloadLink?: string;
 };
 
 type ShopContextType = {
@@ -47,11 +49,11 @@ type ShopContextType = {
   toggleTheme: () => void;
   toggleSidebar: () => void;
   filterProducts: (category?: string) => void;
+  purchaseProduct: (product: Product) => Promise<boolean>;
+  viewProductDetails: (productId: string) => void;
 };
 
-const ShopContext = createContext<ShopContextType | undefined>(undefined);
-
-// Sample product data
+// Sample product data - limited to 3 products as requested
 const sampleProducts: Product[] = [
   {
     id: "1",
@@ -68,6 +70,7 @@ const sampleProducts: Product[] = [
     stock: 15,
     image: "/lovable-uploads/af231cf1-f65f-4947-a1cb-fe4328f1d729.png",
     category: "Accessories",
+    downloadLink: "https://www.mediafire.com"
   },
   {
     id: "2",
@@ -83,6 +86,7 @@ const sampleProducts: Product[] = [
     stock: 999,
     image: "/lovable-uploads/0292aa96-0ccd-4512-a886-ae373d37eeb8.png",
     category: "Software",
+    downloadLink: "https://www.mediafire.com"
   },
   {
     id: "3",
@@ -98,38 +102,7 @@ const sampleProducts: Product[] = [
     stock: 50,
     image: "/lovable-uploads/11233299-435c-4846-9a4b-9f7787856305.png",
     category: "Keys",
-  },
-  {
-    id: "4",
-    name: "Performance Optimizer",
-    price: 149.99,
-    discountedPrice: 119.99,
-    description: "Advanced tool for optimizing your gaming performance",
-    features: [
-      "FPS boost",
-      "System optimization",
-      "Resource management",
-      "Real-time monitoring"
-    ],
-    stock: 7,
-    image: "/lovable-uploads/edd98424-6f2d-41f6-91a0-f0a4eb5849d7.png",
-    category: "Software",
-  },
-  {
-    id: "5",
-    name: "Gaming Enhancement Pack",
-    price: 129.99,
-    discountedPrice: 99.99,
-    description: "Complete package of gaming enhancements and boosters",
-    features: [
-      "Multiple profiles",
-      "Cloud synchronization",
-      "Anti-detection system",
-      "Premium support"
-    ],
-    stock: 12,
-    image: "/lovable-uploads/2ca62e6d-f7a6-4e54-b7f9-e31914fb6efe.png",
-    category: "Bundles",
+    downloadLink: "https://www.mediafire.com"
   }
 ];
 
@@ -165,40 +138,88 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isDarkMode]);
 
-  // Check for saved user data
+  // Check for active Supabase session on app load
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      
+      if (data?.session) {
+        await fetchUserProfile(data.session.user.id);
+      }
+    };
+    
+    checkSession();
+    
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          await fetchUserProfile(session.user.id);
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+        }
+      }
+    );
+    
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
+  
+  // Fetch user profile from Supabase
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching user profile:", error);
+        return;
+      }
+      
+      if (data) {
+        setUser({
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          balance: Number(data.balance),
+        });
+      }
+    } catch (error) {
+      console.error("Error in fetchUserProfile:", error);
+    }
+  };
 
   const isAuthenticated = !!user;
 
   const login = async (email: string, password: string) => {
     try {
-      // Simulating API call
       if (!email || !password) {
         throw new Error("Please enter both email and password");
       }
       
-      // For demo purposes, let's use a mock user
-      const mockUser: User = {
-        id: "1",
-        username: email.split("@")[0],
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        balance: 100.00,
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      
-      toast({
-        title: "Successfully logged in",
-        description: `Welcome back, ${mockUser.username}!`,
+        password,
       });
       
-      navigate("/");
+      if (error) {
+        throw error;
+      }
+      
+      if (data.user) {
+        await fetchUserProfile(data.user.id);
+        
+        toast({
+          title: "Successfully logged in",
+          description: `Welcome back, ${user?.username}!`,
+        });
+        
+        navigate("/");
+      }
     } catch (error) {
       let message = "Login failed";
       if (error instanceof Error) {
@@ -213,7 +234,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem("user");
     toast({
@@ -225,28 +247,32 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (username: string, email: string, password: string) => {
     try {
-      // Simulating API call
       if (!username || !email || !password) {
         throw new Error("Please fill in all fields");
       }
       
-      // For demo purposes, create a new mock user
-      const newUser: User = {
-        id: Math.random().toString(36).substring(2, 9),
-        username,
+      const { data, error } = await supabase.auth.signUp({
         email,
-        balance: 0,
-      };
-      
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
-      
-      toast({
-        title: "Account created",
-        description: `Welcome, ${username}!`,
+        password,
+        options: {
+          data: {
+            username,
+          },
+        },
       });
       
-      navigate("/");
+      if (error) {
+        throw error;
+      }
+      
+      if (data.user) {
+        toast({
+          title: "Account created",
+          description: `Welcome, ${username}! Please verify your email if required.`,
+        });
+        
+        navigate("/login");
+      }
     } catch (error) {
       let message = "Registration failed";
       if (error instanceof Error) {
@@ -322,6 +348,89 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const purchaseProduct = async (product: Product): Promise<boolean> => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please log in to purchase this product",
+      });
+      navigate("/login");
+      return false;
+    }
+
+    if (user.balance < product.price) {
+      toast({
+        variant: "destructive",
+        title: "Insufficient balance",
+        description: "You don't have enough balance to purchase this product",
+      });
+      return false;
+    }
+
+    try {
+      // Update user balance in Supabase
+      const newBalance = user.balance - (product.discountedPrice || product.price);
+      
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ balance: newBalance })
+        .eq("id", user.id);
+      
+      if (updateError) {
+        console.error("Error updating balance:", updateError);
+        toast({
+          variant: "destructive",
+          title: "Transaction failed",
+          description: "An error occurred while processing your purchase",
+        });
+        return false;
+      }
+      
+      // Record the purchase
+      const { error: purchaseError } = await supabase
+        .from("purchases")
+        .insert({
+          user_id: user.id,
+          product_id: product.id,
+          product_name: product.name,
+          amount: product.discountedPrice || product.price
+        });
+      
+      if (purchaseError) {
+        console.error("Error recording purchase:", purchaseError);
+      }
+      
+      // Update local user state
+      setUser({
+        ...user,
+        balance: newBalance
+      });
+      
+      toast({
+        title: "Purchase successful",
+        description: `You have successfully purchased ${product.name}`,
+      });
+      
+      // Open the download link in a new tab
+      window.open(product.downloadLink || "https://www.mediafire.com", "_blank");
+      
+      return true;
+    } catch (error) {
+      console.error("Purchase error:", error);
+      toast({
+        variant: "destructive",
+        title: "Transaction failed",
+        description: "An error occurred while processing your purchase",
+      });
+      return false;
+    }
+  };
+
+  const viewProductDetails = (productId: string) => {
+    window.open("https://test2.com", "_blank");
+  };
+
   const contextValue: ShopContextType = {
     user,
     products,
@@ -344,6 +453,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toggleTheme,
     toggleSidebar,
     filterProducts,
+    purchaseProduct,
+    viewProductDetails,
   };
 
   return (
@@ -352,6 +463,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </ShopContext.Provider>
   );
 };
+
+const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export const useShop = () => {
   const context = useContext(ShopContext);

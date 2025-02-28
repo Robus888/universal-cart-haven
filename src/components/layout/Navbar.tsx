@@ -1,245 +1,171 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
-import { useShop } from "@/contexts/ShopContext";
-import { 
-  Menu, 
-  Sun, 
-  Moon, 
-  ShoppingCart, 
-  Bell, 
-  Search 
-} from "lucide-react";
+import { Menu, Search, ShoppingCart, Sun, Moon, MenuIcon, X, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+import { useShop } from "@/contexts/ShopContext";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import WalletButton from "@/components/WalletButton";
 
 const Navbar: React.FC = () => {
-  const { 
-    toggleSidebar, 
-    isDarkMode, 
-    toggleTheme, 
-    currency, 
-    setCurrency, 
-    language,
-    setLanguage,
-    isAuthenticated,
-    cart,
+  const {
+    isDarkMode,
+    toggleTheme,
+    setSearchQuery,
     searchQuery,
-    setSearchQuery
+    toggleSidebar,
+    isAuthenticated,
+    logout,
+    user,
+    cart
   } = useShop();
-  
-  const [showSearch, setShowSearch] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90">
-      <div className="container mx-auto">
+    <nav className="sticky top-0 z-30 w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden mr-2"
               onClick={toggleSidebar}
-              className="mr-2 lg:hidden"
+              data-sidebar-trigger="true"
             >
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle sidebar</span>
+              <MenuIcon className="h-5 w-5" />
             </Button>
-            
-            <NavLink to="/" className="flex items-center space-x-2 lg:hidden">
-              <div className="h-8 w-8 rounded-full bg-shop-blue flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12 22V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M20 7L12 12L4 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <span className="font-bold hidden sm:inline">GameShop</span>
+
+            <NavLink to="/" className="flex items-center space-x-2">
+              <img 
+                src="https://cdn.discordapp.com/attachments/1092192491840737421/1344813833675604019/IMG_4837.png?ex=67c246fb&is=67c0f57b&hm=70a394743fb2a83b82ae74ddfbe72f8a27d3d7c5f0311d47c63cb30a5319b2a1&" 
+                alt="Yowx Mods Shop" 
+                className="shop-logo" 
+              />
+              <span className="font-bold text-xl hidden sm:inline-block">Yowx Mods Shop</span>
             </NavLink>
           </div>
 
-          {showSearch ? (
-            <div className="flex-1 max-w-md mx-4 relative animate-fade-in">
+          <div className="hidden md:flex flex-1 max-w-md mx-4">
+            <div className="relative w-full">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
               <Input
                 type="search"
                 placeholder="Search products..."
+                className="w-full pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10"
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7" 
-                onClick={() => setShowSearch(false)}
-              >
-                Cancel
-              </Button>
             </div>
-          ) : (
-            <nav className="mx-4 hidden md:flex items-center space-x-4 flex-1 justify-center">
-              <NavLink to="/" className="text-sm font-medium transition-colors hover:text-shop-blue">
-                Home
-              </NavLink>
-              <NavLink to="/shop" className="text-sm font-medium transition-colors hover:text-shop-blue">
-                Shop
-              </NavLink>
-              <NavLink to="/featured" className="text-sm font-medium transition-colors hover:text-shop-blue">
-                Featured
-              </NavLink>
-              <NavLink to="/about" className="text-sm font-medium transition-colors hover:text-shop-blue">
-                About
-              </NavLink>
-              <NavLink to="/contact" className="text-sm font-medium transition-colors hover:text-shop-blue">
-                Contact
-              </NavLink>
-            </nav>
-          )}
+          </div>
 
           <div className="flex items-center space-x-2">
-            {!showSearch && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowSearch(true)}
-              >
-                <Search className="h-5 w-5" />
-                <span className="sr-only">Search</span>
-              </Button>
+            {isAuthenticated && (
+              <WalletButton />
             )}
+            
+            <NavLink to="/shop">
+              <Button variant="ghost" size="sm">
+                Shop
+              </Button>
+            </NavLink>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  {isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={toggleTheme}>
-                  {isDarkMode ? (
-                    <Sun className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Moon className="mr-2 h-4 w-4" />
-                  )}
-                  <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
                   {cart.length > 0 && (
-                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
                       {cart.length}
-                    </Badge>
+                    </span>
                   )}
-                  <span className="sr-only">Shopping cart</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel>Shopping Cart</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+              <DropdownMenuContent align="end" className="w-56">
                 {cart.length === 0 ? (
-                  <div className="py-4 text-center text-sm text-gray-500">
-                    Your cart is empty
+                  <div className="p-4 text-center">
+                    <p className="text-gray-500 dark:text-gray-400">Your cart is empty</p>
                   </div>
                 ) : (
                   <>
-                    <div className="max-h-96 overflow-auto">
-                      {cart.map((item) => (
-                        <DropdownMenuItem key={item.id} className="flex justify-between items-center">
-                          <div className="flex items-center space-x-2">
-                            <div className="h-10 w-10 rounded bg-gray-100 dark:bg-gray-800 flex-shrink-0"></div>
-                            <div>
-                              <p className="text-sm font-medium">{item.name}</p>
-                              <p className="text-xs text-gray-500">
-                                {currency} {item.discountedPrice ?? item.price}
-                              </p>
-                            </div>
+                    <div className="p-2">
+                      {cart.slice(0, 3).map((item) => (
+                        <div key={item.id} className="flex items-center space-x-2 p-2">
+                          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover rounded"
+                            />
                           </div>
-                        </DropdownMenuItem>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{item.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: 'USD'
+                              }).format(item.discountedPrice || item.price)}
+                            </p>
+                          </div>
+                        </div>
                       ))}
+                      {cart.length > 3 && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                          +{cart.length - 3} more items
+                        </p>
+                      )}
                     </div>
                     <DropdownMenuSeparator />
                     <div className="p-2">
-                      <NavLink 
-                        to="/cart"
-                        className="btn-primary w-full text-center"
-                      >
+                      <Button className="w-full" size="sm">
                         View Cart
-                      </NavLink>
+                      </Button>
                     </div>
                   </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Bell className="h-5 w-5" />
-                  <span className="sr-only">Notifications</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="py-4 text-center text-sm text-gray-500">
-                  No new notifications
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="ml-2 text-xs font-medium">
-                  {currency} / {language}
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{user?.username}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <NavLink to="/login">
+                <Button variant="default" size="sm">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Settings</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-medium text-gray-500">Currency</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setCurrency("USD")}>
-                  USD {currency === "USD" && "✓"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setCurrency("EUR")}>
-                  EUR {currency === "EUR" && "✓"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setCurrency("GBP")}>
-                  GBP {currency === "GBP" && "✓"}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-medium text-gray-500">Language</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setLanguage("English")}>
-                  English {language === "English" && "✓"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("Spanish")}>
-                  Spanish {language === "Spanish" && "✓"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("French")}>
-                  French {language === "French" && "✓"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </NavLink>
+            )}
           </div>
         </div>
       </div>
-    </header>
+    </nav>
   );
 };
 

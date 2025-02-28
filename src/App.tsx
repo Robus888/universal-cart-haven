@@ -14,31 +14,39 @@ import NotFound from "./pages/NotFound";
 
 // Add framer-motion
 import { MotionConfig } from "framer-motion";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <MotionConfig reducedMotion="user">
-        <BrowserRouter>
-          <ShopProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ShopProvider>
-        </BrowserRouter>
-      </MotionConfig>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Set the document title
+  useEffect(() => {
+    document.title = "Yowx Mods Shop";
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <MotionConfig reducedMotion="user">
+          <BrowserRouter>
+            <ShopProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ShopProvider>
+          </BrowserRouter>
+        </MotionConfig>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
