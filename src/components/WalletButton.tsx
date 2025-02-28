@@ -16,19 +16,16 @@ const WalletButton: React.FC = () => {
     }).format(balance);
   };
   
-  const handleWalletClick = () => {
-    window.open("https://t.me/yowxios", "_blank");
-  };
-  
   return (
-    <Button 
-      onClick={handleWalletClick}
-      className="wallet-button bg-shop-blue text-white hover:bg-shop-darkBlue flex items-center"
-      variant="outline"
-    >
-      <Wallet className="h-4 w-4 mr-2" />
-      <span>{user ? formatBalance(user.balance) : "$0.00"}</span>
-    </Button>
+    <NavLink to="/wallet">
+      <Button 
+        className="wallet-button bg-shop-blue text-white hover:bg-shop-darkBlue flex items-center"
+        variant="outline"
+      >
+        <Wallet className="h-4 w-4 mr-2" />
+        <span>{user ? formatBalance(user.balance) : "$0.00"}</span>
+      </Button>
+    </NavLink>
   );
 };
 

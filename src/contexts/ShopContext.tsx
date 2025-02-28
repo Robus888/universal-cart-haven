@@ -52,6 +52,8 @@ type ShopContextType = {
   filterProducts: (category?: string) => void;
   purchaseProduct: (product: Product) => Promise<boolean>;
   viewProductDetails: (productId: string) => void;
+  clearCart: () => void;
+  getDownloadLink: (productId: string) => string;
 };
 
 // Sample product data
@@ -71,7 +73,7 @@ const sampleProducts: Product[] = [
     stock: 15,
     image: "/lovable-uploads/af231cf1-f65f-4947-a1cb-fe4328f1d729.png",
     category: "Accessories",
-    downloadLink: "https://www.mediafire.com"
+    downloadLink: "https://mediafire2.com"
   },
   {
     id: "2",
@@ -87,7 +89,7 @@ const sampleProducts: Product[] = [
     stock: 999,
     image: "/lovable-uploads/0292aa96-0ccd-4512-a886-ae373d37eeb8.png",
     category: "Software",
-    downloadLink: "https://www.mediafire.com"
+    downloadLink: "https://mediafire5.com"
   },
   {
     id: "3",
@@ -103,7 +105,7 @@ const sampleProducts: Product[] = [
     stock: 50,
     image: "/lovable-uploads/11233299-435c-4846-9a4b-9f7787856305.png",
     category: "Keys",
-    downloadLink: "https://www.mediafire.com"
+    downloadLink: "https://yowx33.com"
   }
 ];
 
@@ -117,6 +119,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [searchQuery, setSearchQueryState] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [purchasedProducts, setPurchasedProducts] = useState<string[]>([]);
   const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
@@ -140,20 +143,39 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isDarkMode]);
 
+  // Load purchased products from localStorage
+  useEffect(() => {
+    const savedPurchases = localStorage.getItem("purchasedProducts");
+    if (savedPurchases) {
+      setPurchasedProducts(JSON.parse(savedPurchases));
+    }
+  }, []);
+
+  // Save purchased products to localStorage
+  useEffect(() => {
+    if (purchasedProducts.length > 0) {
+      localStorage.setItem("purchasedProducts", JSON.stringify(purchasedProducts));
+    }
+  }, [purchasedProducts]);
+
   // Check for active Supabase session on app load
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
+        const { data: sessionData } = await supabase.auth.getSession();
         
-        if (data?.session) {
-          await fetchUserProfile(data.session.user.id);
+        if (sessionData?.session) {
+          const { data: userData } = await supabase.auth.getUser();
+          
+          if (userData?.user) {
+            await fetchUserProfile(userData.user.id);
+          }
         }
         
-        setAuthChecked(true); // Mark auth check as complete regardless of result
+        setAuthChecked(true);
       } catch (error) {
         console.error("Error checking session:", error);
-        setAuthChecked(true); // Mark auth check as complete even if there was an error
+        setAuthChecked(true);
       }
     };
     
@@ -173,6 +195,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } else if (event === "SIGNED_OUT") {
           setUser(null);
+          localStorage.removeItem("user");
+          
+          // If user is on a protected page, redirect to login
+          if (window.location.pathname === "/wallet" || window.location.pathname === "/downloads") {
+            navigate("/login");
+          }
         }
       }
     );
@@ -181,6 +209,21 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authListener?.subscription.unsubscribe();
     };
   }, [navigate]);
+
+  // Save user in localStorage for persistence
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [user]);
+
+  // Restore user from localStorage on page refresh
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser && !user) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, [user]);
   
   // Fetch user profile from Supabase
   const fetchUserProfile = async (userId: string) => {
@@ -197,24 +240,27 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (data) {
-        setUser({
+        const userData = {
           id: data.id,
           username: data.username || 'User',
           email: data.email || '',
           balance: Number(data.balance) || 0,
           is_admin: !!data.is_admin
-        });
+        };
+        
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
       } else {
         // Profile doesn't exist yet, create it
-        const { data: userData } = await supabase.auth.getUser();
+        const { data: authData } = await supabase.auth.getUser();
         
-        if (userData && userData.user) {
+        if (authData && authData.user) {
           const { error: insertError } = await supabase
             .from("profiles")
             .insert({
               id: userId,
-              username: userData.user.user_metadata.username || userData.user.email?.split('@')[0] || 'User',
-              email: userData.user.email,
+              username: authData.user.user_metadata.username || authData.user.email?.split('@')[0] || 'User',
+              email: authData.user.email,
               balance: 0,
               is_admin: false
             });
@@ -232,13 +278,16 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .maybeSingle();
             
           if (newProfile) {
-            setUser({
+            const userData = {
               id: newProfile.id,
               username: newProfile.username || 'User',
               email: newProfile.email || '',
               balance: Number(newProfile.balance) || 0,
               is_admin: !!newProfile.is_admin
-            });
+            };
+            
+            setUser(userData);
+            localStorage.setItem("user", JSON.stringify(userData));
           }
         }
       }
@@ -273,7 +322,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         
         navigate("/");
-        return; // Return here to prevent further execution
+        return;
       }
     } catch (error) {
       let message = "Login failed";
@@ -287,7 +336,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: message,
       });
       
-      throw error; // Rethrow the error so the form can handle it
+      throw error;
     }
   };
 
@@ -300,6 +349,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       setUser(null);
+      localStorage.removeItem("user");
       
       toast({
         title: "Logged out",
@@ -362,7 +412,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: message,
       });
       
-      throw error; // Rethrow the error so the form can handle it
+      throw error;
     }
   };
 
@@ -379,6 +429,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newCart = prevCart.filter((item) => item.id !== productId);
       return newCart;
     });
+  };
+
+  const clearCart = () => {
+    setCart([]);
   };
 
   const setCurrency = (newCurrency: Currency) => {
@@ -425,6 +479,11 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const filtered = products.filter((product) => product.category === category);
       setFilteredProducts(filtered);
     }
+  };
+
+  const getDownloadLink = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    return product?.downloadLink || "#";
   };
 
   const purchaseProduct = async (product: Product): Promise<boolean> => {
@@ -499,13 +558,22 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         balance: newBalance
       });
       
+      // Update localStorage
+      localStorage.setItem("user", JSON.stringify({
+        ...user,
+        balance: newBalance
+      }));
+      
+      // Add to purchased products
+      setPurchasedProducts(prev => [...prev, product.id]);
+      
       toast({
         title: "Purchase successful",
         description: `You have successfully purchased ${product.name}`,
       });
       
       // Open the download link in a new tab
-      window.open(product.downloadLink || "https://www.mediafire.com", "_blank");
+      window.open(product.downloadLink || "#", "_blank");
       
       return true;
     } catch (error) {
@@ -547,6 +615,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     filterProducts,
     purchaseProduct,
     viewProductDetails,
+    clearCart,
+    getDownloadLink,
   };
 
   return (

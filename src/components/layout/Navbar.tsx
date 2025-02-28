@@ -1,6 +1,6 @@
 
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { Menu, Search, ShoppingCart, Sun, Moon, MenuIcon, X, LogIn, LogOut, User, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ const Navbar: React.FC = () => {
     user,
     cart
   } = useShop();
+  
+  const location = useLocation();
 
   return (
     <nav className="sticky top-0 z-30 w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
@@ -148,6 +150,12 @@ const Navbar: React.FC = () => {
                     <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <NavLink to="/downloads" className="flex items-center cursor-pointer">
+                      <Menu className="mr-2 h-4 w-4" />
+                      <span>My Downloads</span>
+                    </NavLink>
+                  </DropdownMenuItem>
                   {user?.is_admin && (
                     <DropdownMenuItem asChild>
                       <NavLink to="/admin" className="flex items-center cursor-pointer">
