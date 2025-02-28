@@ -206,14 +206,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       } else {
         // Profile doesn't exist yet, create it
-        const { user } = await supabase.auth.getUser();
-        if (user) {
+        const { data: userData } = await supabase.auth.getUser();
+        
+        if (userData && userData.user) {
           const { error: insertError } = await supabase
             .from("profiles")
             .insert({
               id: userId,
-              username: user.user_metadata.username || user.email?.split('@')[0] || 'User',
-              email: user.email,
+              username: userData.user.user_metadata.username || userData.user.email?.split('@')[0] || 'User',
+              email: userData.user.email,
               balance: 0,
               is_admin: false
             });
