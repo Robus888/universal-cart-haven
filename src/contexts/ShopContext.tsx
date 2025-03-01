@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -54,6 +53,10 @@ type ShopContextType = {
   viewProductDetails: (productId: string) => void;
   clearCart: () => void;
   getDownloadLink: (productId: string) => string;
+  calculateCartTotal: () => number;
+  processCartPayment: () => Promise<boolean>;
+  getPurchasedProducts: () => string[];
+  isProductPurchased: (productId: string) => boolean;
 };
 
 // Sample product data
@@ -429,10 +432,132 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newCart = prevCart.filter((item) => item.id !== productId);
       return newCart;
     });
+    toast({
+      title: "Removed from cart",
+      description: "Item has been removed from your cart.",
+    });
   };
 
   const clearCart = () => {
     setCart([]);
+  };
+
+  const calculateCartTotal = () => {
+    return cart.reduce((total, item) => {
+      return total + (item.discountedPrice || item.price);
+    }, 0);
+  };
+
+  const processCartPayment = async (): Promise<boolean> => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please log in to purchase these items",
+      });
+      navigate("/login");
+      return false;
+    }
+
+    const total = calculateCartTotal();
+    if (user.balance < total) {
+      toast({
+        variant: "destructive",
+        title: "Insufficient balance",
+        description: (
+          <div>
+            <p>You don't have enough balance to purchase these items</p>
+            <a 
+              href="https://t.me/yowxios" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-500 font-semibold hover:underline"
+            >
+              Buy coins now
+            </a>
+          </div>
+        ),
+      });
+      return false;
+    }
+
+    try {
+      // Update user balance in Supabase
+      const newBalance = user.balance - total;
+      
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ balance: newBalance })
+        .eq("id", user.id);
+      
+      if (updateError) {
+        console.error("Error updating balance:", updateError);
+        toast({
+          variant: "destructive",
+          title: "Transaction failed",
+          description: "An error occurred while processing your purchase",
+        });
+        return false;
+      }
+      
+      // Record all purchases
+      for (const item of cart) {
+        const { error: purchaseError } = await supabase
+          .from("purchases")
+          .insert({
+            user_id: user.id,
+            product_id: item.id,
+            product_name: item.name,
+            amount: item.discountedPrice || item.price
+          });
+        
+        if (purchaseError) {
+          console.error("Error recording purchase:", purchaseError);
+        }
+      }
+      
+      // Update local user state
+      setUser({
+        ...user,
+        balance: newBalance
+      });
+      
+      // Update localStorage
+      localStorage.setItem("user", JSON.stringify({
+        ...user,
+        balance: newBalance
+      }));
+      
+      // Add to purchased products
+      const productIds = cart.map(item => item.id);
+      setPurchasedProducts(prev => [...new Set([...prev, ...productIds])]);
+      
+      toast({
+        title: "Purchase successful",
+        description: `You have successfully purchased ${cart.length} item(s)`,
+      });
+      
+      // Clear the cart
+      clearCart();
+      
+      return true;
+    } catch (error) {
+      console.error("Purchase error:", error);
+      toast({
+        variant: "destructive",
+        title: "Transaction failed",
+        description: "An error occurred while processing your purchase",
+      });
+      return false;
+    }
+  };
+
+  const getPurchasedProducts = () => {
+    return purchasedProducts;
+  };
+
+  const isProductPurchased = (productId: string) => {
+    return purchasedProducts.includes(productId);
   };
 
   const setCurrency = (newCurrency: Currency) => {
@@ -617,6 +742,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     viewProductDetails,
     clearCart,
     getDownloadLink,
+    calculateCartTotal,
+    processCartPayment,
+    getPurchasedProducts,
+    isProductPurchased,
   };
 
   return (

@@ -7,14 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-import { ShoppingCart, ArrowLeft, Share, Heart, Check, AlertCircle, Truck, ExternalLink, Eye } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Share, Heart, Check, AlertCircle, Truck, ExternalLink, Eye, Download } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, addToCart, currency, purchaseProduct, viewProductDetails, user } = useShop();
+  const { 
+    products, 
+    addToCart, 
+    currency, 
+    purchaseProduct, 
+    viewProductDetails, 
+    user, 
+    isProductPurchased 
+  } = useShop();
+  const [showDownloadDialog, setShowDownloadDialog] = React.useState(false);
   
   const product = products.find((p) => p.id === id);
+  const isPurchased = product ? isProductPurchased(product.id) : false;
   
   if (!product) {
     return (
@@ -45,6 +56,23 @@ const ProductDetail: React.FC = () => {
 
   const handleViewDetails = () => {
     viewProductDetails(product.id);
+  };
+
+  const getDownloadLinks = () => {
+    let downloadIpaLink = "https://www.mediafire.com/file/p06ndef7dsgvt9r/Free+Fire_1.108.1_1739330951.ipa/file";
+    
+    if (product.id === "1") {
+      downloadIpaLink = "https://mediafire2.com";
+    } else if (product.id === "2") {
+      downloadIpaLink = "https://mediafire5.com";
+    } else if (product.id === "3") {
+      downloadIpaLink = "https://yowx33.com";
+    }
+    
+    return {
+      downloadIpa: downloadIpaLink,
+      requestKey: "https://t.me/yowxios"
+    };
   };
   
   return (
@@ -162,24 +190,36 @@ const ProductDetail: React.FC = () => {
             </div>
             
             <div className="space-y-3">
-              <Button 
-                onClick={handlePurchase} 
-                disabled={product.stock === 0 || !user || user.balance < (product.discountedPrice || product.price)}
-                className="w-full bg-shop-blue hover:bg-shop-darkBlue"
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Buy Now {user && user.balance < (product.discountedPrice || product.price) && "(Insufficient Balance)"}
-              </Button>
-              
-              <Button 
-                onClick={() => addToCart(product)} 
-                disabled={product.stock === 0}
-                variant="outline"
-                className="w-full"
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Add to Cart
-              </Button>
+              {isPurchased ? (
+                <Button 
+                  onClick={() => setShowDownloadDialog(true)} 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Download IPA
+                </Button>
+              ) : (
+                <>
+                  <Button 
+                    onClick={handlePurchase} 
+                    disabled={product.stock === 0 || !user || user.balance < (product.discountedPrice || product.price)}
+                    className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Buy Now {user && user.balance < (product.discountedPrice || product.price) && "(Insufficient Balance)"}
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => addToCart(product)} 
+                    disabled={product.stock === 0}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Add to Cart
+                  </Button>
+                </>
+              )}
             </div>
             
             <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
@@ -254,6 +294,39 @@ const ProductDetail: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={showDownloadDialog} onOpenChange={setShowDownloadDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Download {product.name}</DialogTitle>
+            <DialogDescription>
+              Choose your download option below
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Button 
+              className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+              onClick={() => window.open(getDownloadLinks().downloadIpa, "_blank")}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download IPA Now
+            </Button>
+            <Button 
+              variant="outline"
+              className="w-full"
+              onClick={() => window.open(getDownloadLinks().requestKey, "_blank")}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Request Key
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowDownloadDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };

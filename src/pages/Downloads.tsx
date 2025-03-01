@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, ExternalLink, AlertCircle } from "lucide-react";
+import { Download, ExternalLink, AlertCircle, Eye } from "lucide-react";
 import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 type Purchase = {
   id: string;
@@ -18,9 +19,11 @@ type Purchase = {
 }
 
 const Downloads: React.FC = () => {
-  const { user, isAuthenticated, products, getDownloadLink } = useShop();
+  const { user, isAuthenticated, products } = useShop();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,7 +68,25 @@ const Downloads: React.FC = () => {
   };
 
   const handleDownload = (productId: string) => {
-    window.open(getDownloadLink(productId), "_blank");
+    setSelectedProduct(productId);
+    setShowDownloadDialog(true);
+  };
+
+  const getDownloadLinks = (productId: string) => {
+    let downloadIpaLink = "https://www.mediafire.com/file/p06ndef7dsgvt9r/Free+Fire_1.108.1_1739330951.ipa/file";
+    
+    if (productId === "1") {
+      downloadIpaLink = "https://mediafire2.com";
+    } else if (productId === "2") {
+      downloadIpaLink = "https://mediafire5.com";
+    } else if (productId === "3") {
+      downloadIpaLink = "https://yowx33.com";
+    }
+    
+    return {
+      downloadIpa: downloadIpaLink,
+      requestKey: "https://t.me/yowxios"
+    };
   };
 
   return (
@@ -101,14 +122,14 @@ const Downloads: React.FC = () => {
                           className="flex-1 bg-shop-blue hover:bg-shop-darkBlue"
                         >
                           <Download className="mr-2 h-4 w-4" />
-                          Download
+                          Download IPA
                         </Button>
                         {product && (
                           <Button 
                             variant="outline"
                             onClick={() => navigate(`/product/${product.id}`)}
                           >
-                            <ExternalLink className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -129,6 +150,43 @@ const Downloads: React.FC = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={showDownloadDialog} onOpenChange={setShowDownloadDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Download Options</DialogTitle>
+            <DialogDescription>
+              Choose your download option below
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {selectedProduct && (
+              <>
+                <Button 
+                  className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+                  onClick={() => window.open(getDownloadLinks(selectedProduct).downloadIpa, "_blank")}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download IPA Now
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => window.open(getDownloadLinks(selectedProduct).requestKey, "_blank")}
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Request Key
+                </Button>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowDownloadDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };

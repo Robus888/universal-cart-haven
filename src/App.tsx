@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import AdminPanel from "./components/admin/AdminPanel";
 import Wallet from "./pages/Wallet";
 import Downloads from "./pages/Downloads";
+import Cart from "./pages/Cart";
 import "./App.css";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/downloads" element={<Downloads />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </ShopProvider>

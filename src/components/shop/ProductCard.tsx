@@ -1,18 +1,28 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useShop, Product } from "@/contexts/ShopContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Eye } from "lucide-react";
+import { ShoppingCart, Eye, Download } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ExternalLink } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { currency, addToCart, viewProductDetails } = useShop();
+  const { 
+    currency, 
+    addToCart, 
+    viewProductDetails, 
+    isProductPurchased 
+  } = useShop();
+
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const isPurchased = isProductPurchased(product.id);
   
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -32,6 +42,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     viewProductDetails(product.id);
+  };
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowDownloadDialog(true);
+  };
+
+  const getDownloadLinks = () => {
+    let downloadIpaLink = "https://www.mediafire.com/file/p06ndef7dsgvt9r/Free+Fire_1.108.1_1739330951.ipa/file";
+    
+    if (product.id === "1") {
+      downloadIpaLink = "https://mediafire2.com";
+    } else if (product.id === "2") {
+      downloadIpaLink = "https://mediafire5.com";
+    } else if (product.id === "3") {
+      downloadIpaLink = "https://yowx33.com";
+    }
+    
+    return {
+      downloadIpa: downloadIpaLink,
+      requestKey: "https://t.me/yowxios"
+    };
   };
   
   return (
@@ -64,6 +97,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <Badge variant="outline" className="text-white border-white">Out of Stock</Badge>
             </div>
           )}
+          {isPurchased && (
+            <Badge variant="default" className="absolute top-2 left-2 bg-green-600">
+              Purchased
+            </Badge>
+          )}
         </div>
         
         <div className="p-4">
@@ -91,14 +129,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </p>
           
           <div className="mt-4 flex space-x-2">
-            <Button 
-              className="w-full bg-shop-blue hover:bg-shop-darkBlue"
-              onClick={handleAddToCart}
-              disabled={product.stock === 0}
-            >
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Add to Cart
-            </Button>
+            {isPurchased ? (
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={handleDownload}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download IPA
+              </Button>
+            ) : (
+              <Button 
+                className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+                onClick={handleAddToCart}
+                disabled={product.stock === 0}
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Add to Cart
+              </Button>
+            )}
             
             <Button 
               variant="outline" 
@@ -110,6 +158,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </div>
       </NavLink>
+
+      <Dialog open={showDownloadDialog} onOpenChange={setShowDownloadDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Download {product.name}</DialogTitle>
+            <DialogDescription>
+              Choose your download option below
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Button 
+              className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+              onClick={() => window.open(getDownloadLinks().downloadIpa, "_blank")}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download IPA Now
+            </Button>
+            <Button 
+              variant="outline"
+              className="w-full"
+              onClick={() => window.open(getDownloadLinks().requestKey, "_blank")}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Request Key
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowDownloadDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

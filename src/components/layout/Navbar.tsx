@@ -1,6 +1,6 @@
 
 import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, Search, ShoppingCart, Sun, Moon, MenuIcon, X, LogIn, LogOut, User, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,10 +18,19 @@ const Navbar: React.FC = () => {
     isAuthenticated,
     logout,
     user,
-    cart
+    cart,
+    calculateCartTotal
   } = useShop();
   
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  };
 
   return (
     <nav className="sticky top-0 z-30 w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
@@ -74,7 +83,7 @@ const Navbar: React.FC = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={() => cart.length > 0 ? null : navigate("/cart")}>
                   <ShoppingCart className="h-5 w-5" />
                   {cart.length > 0 && (
                     <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
@@ -91,8 +100,8 @@ const Navbar: React.FC = () => {
                 ) : (
                   <>
                     <div className="p-2">
-                      {cart.slice(0, 3).map((item) => (
-                        <div key={item.id} className="flex items-center space-x-2 p-2">
+                      {cart.slice(0, 3).map((item, index) => (
+                        <div key={`${item.id}-${index}`} className="flex items-center space-x-2 p-2">
                           <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded">
                             <img
                               src={item.image}
@@ -103,12 +112,22 @@ const Navbar: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{item.name}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {new Intl.NumberFormat('en-US', {
-                                style: 'currency',
-                                currency: 'USD'
-                              }).format(item.discountedPrice || item.price)}
+                              {formatPrice(item.discountedPrice || item.price)}
                             </p>
                           </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 text-gray-500 hover:text-red-500"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              const { removeFromCart } = useShop();
+                              removeFromCart(item.id);
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
                       ))}
                       {cart.length > 3 && (
@@ -119,7 +138,15 @@ const Navbar: React.FC = () => {
                     </div>
                     <DropdownMenuSeparator />
                     <div className="p-2">
-                      <Button className="w-full" size="sm">
+                      <div className="flex justify-between items-center text-sm mb-2 px-2">
+                        <span>Total:</span>
+                        <span className="font-semibold">{formatPrice(calculateCartTotal())}</span>
+                      </div>
+                      <Button 
+                        className="w-full" 
+                        size="sm"
+                        onClick={() => navigate("/cart")}
+                      >
                         View Cart
                       </Button>
                     </div>
