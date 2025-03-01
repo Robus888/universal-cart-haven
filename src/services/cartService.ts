@@ -29,19 +29,7 @@ export const processCartPayment = async (
     toast({
       variant: "destructive",
       title: "Insufficient balance",
-      description: (
-        <div>
-          <p>You don't have enough balance to purchase these items</p>
-          <a 
-            href="https://t.me/yowxios" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-blue-500 font-semibold hover:underline"
-          >
-            Buy coins now
-          </a>
-        </div>
-      ),
+      description: "You don't have enough balance to purchase these items",
     });
     return false;
   }
@@ -139,19 +127,7 @@ export const purchaseProduct = async (
     toast({
       variant: "destructive",
       title: "Insufficient balance",
-      description: (
-        <div>
-          <p>You don't have enough balance to purchase this product</p>
-          <a 
-            href="https://t.me/yowxios" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-blue-500 font-semibold hover:underline"
-          >
-            Buy coins now
-          </a>
-        </div>
-      ),
+      description: "You don't have enough balance to purchase this product",
     });
     return false;
   }
