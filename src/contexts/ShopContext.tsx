@@ -482,8 +482,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
+      console.log("Processing payment with total:", total);
+      console.log("Current user balance:", user.balance);
+      
       // Update user balance in Supabase
       const newBalance = user.balance - total;
+      console.log("New balance will be:", newBalance);
       
       const { error: updateError } = await supabase
         .from("profiles")
@@ -501,8 +505,8 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // Record all purchases
-      for (const item of cart) {
-        const { error: purchaseError } = await supabase
+      const purchasePromises = cart.map(item => {
+        return supabase
           .from("purchases")
           .insert({
             user_id: user.id,
@@ -510,9 +514,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
             product_name: item.name,
             amount: item.discountedPrice || item.price
           });
-        
-        if (purchaseError) {
-          console.error("Error recording purchase:", purchaseError);
+      });
+      
+      const results = await Promise.all(purchasePromises);
+      
+      for (const { error } of results) {
+        if (error) {
+          console.error("Error recording purchase:", error);
         }
       }
       

@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { X, ShoppingCart, ArrowLeft, CreditCard, AlertCircle } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 const Cart: React.FC = () => {
   const { 
@@ -35,10 +36,31 @@ const Cart: React.FC = () => {
       return;
     }
     
-    const success = await processCartPayment();
-    if (success) {
-      navigate("/downloads");
+    try {
+      const success = await processCartPayment();
+      if (success) {
+        toast({
+          title: "Payment successful",
+          description: `Your purchase was completed. You can now download your items.`,
+        });
+        navigate("/downloads");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast({
+        variant: "destructive",
+        title: "Payment failed",
+        description: "There was an error processing your payment. Please try again.",
+      });
     }
+  };
+
+  const handleRemoveItem = (productId: string) => {
+    removeFromCart(productId);
+    toast({
+      title: "Item removed",
+      description: "Item has been removed from your cart",
+    });
   };
 
   return (
@@ -92,7 +114,7 @@ const Cart: React.FC = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => handleRemoveItem(item.id)}
                           className="text-red-500 hover:text-red-700 hover:bg-red-50"
                         >
                           <X className="h-4 w-4" />
