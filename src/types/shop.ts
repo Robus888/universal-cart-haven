@@ -53,4 +53,5 @@ export type ShopContextType = {
   processCartPayment: () => Promise<boolean>;
   getPurchasedProducts: () => string[];
   isProductPurchased: (productId: string) => boolean;
+  isInCart: (productId: string) => boolean;
 };

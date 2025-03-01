@@ -18,11 +18,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     currency, 
     addToCart, 
     viewProductDetails, 
-    isProductPurchased 
+    isProductPurchased,
+    isInCart
   } = useShop();
 
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const isPurchased = isProductPurchased(product.id);
+  const isItemInCart = isInCart(product.id);
   
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -141,10 +143,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <Button 
                 className="w-full bg-shop-blue hover:bg-shop-darkBlue"
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={product.stock === 0 || isItemInCart}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                Add to Cart
+                {isItemInCart ? "Already in Cart" : "Add to Cart"}
               </Button>
             )}
             

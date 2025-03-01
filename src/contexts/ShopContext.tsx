@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -163,7 +162,21 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Check if a product is already in the cart
+  const isInCart = (productId: string) => {
+    return cart.some(item => item.id === productId);
+  };
+
   const addToCart = (product: Product) => {
+    // Check if product is already in cart
+    if (isInCart(product.id)) {
+      toast({
+        title: "Already in cart",
+        description: `${product.name} is already in your cart.`,
+      });
+      return;
+    }
+    
     setCart((prevCart) => [...prevCart, product]);
     toast({
       title: "Added to cart",
@@ -307,6 +320,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     processCartPayment: handleProcessCartPayment,
     getPurchasedProducts,
     isProductPurchased,
+    isInCart,
   };
 
   return (

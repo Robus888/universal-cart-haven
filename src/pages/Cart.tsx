@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { X, ShoppingCart, ArrowLeft, CreditCard, AlertCircle } from "lucide-react";
+import { X, ShoppingCart, ArrowLeft, CreditCard, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 const Cart: React.FC = () => {
@@ -117,7 +117,7 @@ const Cart: React.FC = () => {
                           onClick={() => handleRemoveItem(item.id)}
                           className="text-red-500 hover:text-red-700 hover:bg-red-50"
                         >
-                          <X className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </motion.div>

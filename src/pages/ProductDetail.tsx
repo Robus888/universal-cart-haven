@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useShop } from "@/contexts/ShopContext";
@@ -20,12 +19,12 @@ const ProductDetail: React.FC = () => {
     purchaseProduct, 
     viewProductDetails, 
     user, 
-    isProductPurchased 
+    isProductPurchased,
+    isInCart
   } = useShop();
   const [showDownloadDialog, setShowDownloadDialog] = React.useState(false);
   
   const product = products.find((p) => p.id === id);
-  const isPurchased = product ? isProductPurchased(product.id) : false;
   
   if (!product) {
     return (
@@ -41,6 +40,9 @@ const ProductDetail: React.FC = () => {
       </MainLayout>
     );
   }
+  
+  const isPurchased = isProductPurchased(product.id);
+  const isItemInCart = isInCart(product.id);
   
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -211,12 +213,12 @@ const ProductDetail: React.FC = () => {
                   
                   <Button 
                     onClick={() => addToCart(product)} 
-                    disabled={product.stock === 0}
+                    disabled={product.stock === 0 || isItemInCart}
                     variant="outline"
                     className="w-full"
                   >
                     <ShoppingCart className="mr-2 h-5 w-5" />
-                    Add to Cart
+                    {isItemInCart ? "Already in Cart" : "Add to Cart"}
                   </Button>
                 </>
               )}
