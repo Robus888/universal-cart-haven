@@ -4,31 +4,38 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-interface AnnouncementData {
-  id: string;
-  title: string;
-  message: string;
-  created_at: string;
-}
+import { useShop } from "@/contexts/ShopContext";
+import { X } from "lucide-react";
+import { Announcement as AnnouncementType } from "@/types/shop";
 
 const Announcement: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [announcement, setAnnouncement] = useState<AnnouncementData | null>(null);
-  const { toast } = useToast();
+  const [announcement, setAnnouncement] = useState<AnnouncementType | null>(null);
+  const { toast, dismiss } = useToast();
+  const { user } = useShop();
 
   useEffect(() => {
-    fetchLatestAnnouncement();
-  }, []);
+    fetchAnnouncements();
+  }, [user]);
 
-  const fetchLatestAnnouncement = async () => {
+  const fetchAnnouncements = async () => {
     try {
-      const { data, error } = await supabase
+      // First try to get announcements targeted to this user
+      let query = supabase
         .from("announcements")
         .select("*")
         .eq("active", true)
-        .order("created_at", { ascending: false })
-        .limit(1);
+        .order("created_at", { ascending: false });
+
+      if (user) {
+        // If user is logged in, get announcements for either all users or specifically for this user
+        query = query.or(`audience.eq.all,and(audience.eq.specific,target_user_id.eq.${user.id})`);
+      } else {
+        // If no user is logged in, only get announcements for all users
+        query = query.eq("audience", "all");
+      }
+
+      const { data, error } = await query.limit(1);
 
       if (error) throw error;
       
@@ -70,16 +77,24 @@ const Announcement: React.FC = () => {
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">{announcement.title}</DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-4 top-4"
+            onClick={handleClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </DialogHeader>
         <div className="py-4">
           <p className="whitespace-pre-wrap">{announcement.message}</p>
         </div>
         <DialogFooter className="flex sm:justify-between">
           <Button variant="secondary" onClick={handleDontShowAgain}>
-            No vuelvas a aparecer
+            Don't show again
           </Button>
-          <Button variant="destructive" onClick={handleClose}>
-            CERRAR
+          <Button variant="default" onClick={handleClose}>
+            Close
           </Button>
         </DialogFooter>
       </DialogContent>

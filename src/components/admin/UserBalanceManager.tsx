@@ -130,6 +130,9 @@ const UserBalanceManager: React.FC = () => {
           user.id === userId ? { ...user, balance: newBalance } : user
         )
       );
+
+      // Force a refresh to ensure we have the latest data
+      fetchUsers();
     } catch (error) {
       console.error("Error updating balance:", error);
       toast({

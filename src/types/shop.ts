@@ -23,6 +23,18 @@ export type Product = {
   downloadLink?: string;
 };
 
+export type AnnouncementAudience = "all" | "specific";
+
+export type Announcement = {
+  id: string;
+  title: string;
+  message: string;
+  created_at: string;
+  active: boolean;
+  audience: AnnouncementAudience;
+  target_user_id?: string | null;
+};
+
 export type ShopContextType = {
   user: User | null;
   products: Product[];

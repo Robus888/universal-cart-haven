@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,13 +7,43 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useShop } from "@/contexts/ShopContext";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { AnnouncementAudience } from "@/types/shop";
+import { User } from "lucide-react";
 
 const AnnouncementManager: React.FC = () => {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
+  const [audience, setAudience] = useState<AnnouncementAudience>("all");
+  const [targetUser, setTargetUser] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [users, setUsers] = useState<{ id: string, username: string, email: string }[]>([]);
   const { user } = useShop();
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, email")
+        .order("username");
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +66,9 @@ const AnnouncementManager: React.FC = () => {
           title,
           message,
           created_by: user?.id,
-          active: true
+          active: true,
+          audience,
+          target_user_id: audience === "specific" ? targetUser : null
         });
         
       if (error) throw error;
@@ -49,6 +81,8 @@ const AnnouncementManager: React.FC = () => {
       // Reset form
       setTitle("");
       setMessage("");
+      setAudience("all");
+      setTargetUser("");
     } catch (error) {
       console.error("Error creating announcement:", error);
       toast({
@@ -65,7 +99,7 @@ const AnnouncementManager: React.FC = () => {
     <Card>
       <CardHeader>
         <CardTitle>Create Announcement</CardTitle>
-        <CardDescription>Create a new announcement for all users</CardDescription>
+        <CardDescription>Create a new announcement for all users or a specific user</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -95,6 +129,47 @@ const AnnouncementManager: React.FC = () => {
               required
             />
           </div>
+
+          <div className="space-y-2">
+            <label htmlFor="audience" className="text-sm font-medium">
+              Audience
+            </label>
+            <Select
+              value={audience}
+              onValueChange={(value: AnnouncementAudience) => setAudience(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select audience" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Users</SelectItem>
+                <SelectItem value="specific">Specific User</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {audience === "specific" && (
+            <div className="space-y-2">
+              <label htmlFor="targetUser" className="text-sm font-medium">
+                Target User
+              </label>
+              <Select
+                value={targetUser}
+                onValueChange={setTargetUser}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a user" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.username || user.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Creating..." : "Create Announcement"}

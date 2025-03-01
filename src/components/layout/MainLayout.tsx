@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import Announcement from "@/components/Announcement";
 import { useShop } from "@/contexts/ShopContext";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +45,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         sidebarOpen ? "lg:ml-64" : ""
       )}>
         <Navbar />
+        <Announcement />
         <main className="container mx-auto p-4">
           {children}
         </main>

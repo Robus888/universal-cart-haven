@@ -1,8 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { 
+import type { 
   Currency, 
   Language, 
   Product, 
@@ -28,8 +29,6 @@ import {
   viewProductDetails 
 } from "@/services/productService";
 import { useTheme } from "@/hooks/useTheme";
-
-export type { Currency, Language, Product, User, ShopContextType };
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -60,6 +59,19 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [purchasedProducts]);
 
+  // Function to refresh user data from Supabase
+  const refreshUserData = async (userId: string) => {
+    try {
+      const profile = await fetchUserProfile(userId);
+      if (profile) {
+        setUser(profile);
+        localStorage.setItem("user", JSON.stringify(profile));
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+    }
+  };
+
   // Check for active Supabase session on app load
   useEffect(() => {
     const checkSession = async () => {
@@ -70,11 +82,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const { data: userData } = await supabase.auth.getUser();
           
           if (userData?.user) {
-            const profile = await fetchUserProfile(userData.user.id);
-            if (profile) {
-              setUser(profile);
-              localStorage.setItem("user", JSON.stringify(profile));
-            }
+            await refreshUserData(userData.user.id);
           }
         }
         
@@ -93,11 +101,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Auth state changed:", event, session);
         
         if (event === "SIGNED_IN" && session) {
-          const profile = await fetchUserProfile(session.user.id);
-          if (profile) {
-            setUser(profile);
-            localStorage.setItem("user", JSON.stringify(profile));
-          }
+          await refreshUserData(session.user.id);
           
           // If user is on login page, redirect to home
           if (window.location.pathname === "/login" || window.location.pathname === "/register") {
@@ -115,16 +119,30 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
     
+    // Set up interval to periodically refresh user data (every 30 seconds)
+    const refreshInterval = setInterval(() => {
+      if (user) {
+        refreshUserData(user.id);
+      }
+    }, 30000);
+    
     return () => {
       authListener?.subscription.unsubscribe();
+      clearInterval(refreshInterval);
     };
-  }, [navigate]);
+  }, [navigate, user]);
 
   // Restore user from localStorage on page refresh
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser && !user) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      
+      // Also refresh from database to ensure we have the most up-to-date info
+      if (parsedUser.id) {
+        refreshUserData(parsedUser.id);
+      }
     }
   }, [user]);
 
@@ -210,7 +228,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user, 
         cart, 
         clearCart,
-        (updatedUser) => setUser(updatedUser)
+        (updatedUser) => {
+          setUser(updatedUser);
+          refreshUserData(updatedUser.id); // Also refresh from DB
+        }
       );
       
       if (success) {
@@ -236,7 +257,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const success = await purchaseProduct(
         product, 
         user, 
-        (updatedUser) => setUser(updatedUser)
+        (updatedUser) => {
+          setUser(updatedUser);
+          refreshUserData(updatedUser.id); // Also refresh from DB
+        }
       );
       
       if (success) {
