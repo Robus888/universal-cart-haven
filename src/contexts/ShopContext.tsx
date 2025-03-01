@@ -30,7 +30,7 @@ import {
 } from "@/services/productService";
 import { useTheme } from "@/hooks/useTheme";
 
-export { Currency, Language, Product, User, ShopContextType };
+export type { Currency, Language, Product, User, ShopContextType };
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
