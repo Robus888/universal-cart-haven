@@ -39,15 +39,19 @@ const Index: React.FC = () => {
           </motion.div>
           
           <motion.div 
-            className="relative p-1 rounded-xl border-4 border-transparent bg-clip-padding"
-            style={{ borderImage: "linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1" }}
+            className="relative p-1 rounded-xl border-4 border-transparent bg-clip-padding animate-gradient"
+            style={{
+              background: "linear-gradient(270deg, red, orange, yellow, green, blue, indigo, violet)",
+              backgroundSize: "400% 400%",
+              animation: "gradientAnimation 6s ease infinite"
+            }}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <div className="rounded-xl overflow-hidden aspect-video flex items-center justify-center">
               <video 
-                src="/lovable-uploads/sample-video.mp4" 
+                src="/mnt/data/video youx.mp4" 
                 controls 
                 className="w-full h-full object-cover"
               />
