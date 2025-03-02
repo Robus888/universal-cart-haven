@@ -6,46 +6,43 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ShoppingBag, ChevronRight, PauseCircle } from "lucide-react";
-
 const colorVariants = {
   animate: {
     color: ["#017418", "#000000", "#df0000", "#000000"],
     transition: {
       duration: 5,
       repeat: Infinity,
-      repeatType: "loop",
-    },
-  },
+      repeatType: "loop"
+    }
+  }
 };
-
 const Index: React.FC = () => {
-  const { products, isAuthenticated, user } = useShop();
+  const {
+    products,
+    isAuthenticated,
+    user
+  } = useShop();
   const featuredProducts = products.slice(0, 4);
   const videoRef = useRef<HTMLIFrameElement>(null);
-
   const pauseVideo = () => {
     if (videoRef.current) {
       videoRef.current.src = videoRef.current.src;
     }
   };
-
-  return (
-    <MainLayout>
+  return <MainLayout>
       <section className="py-10 mb-12">
         <div className="grid md:grid-cols-2 gap-8 items-center">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-              Enhance Your Gaming Experience
-            </h1>
-            <motion.p
-              className="mb-8 mx-[2px] text-xl"
-              variants={colorVariants}
-              animate="animate"
-            >
+          <motion.div initial={{
+          opacity: 0,
+          x: -20
+        }} animate={{
+          opacity: 1,
+          x: 0
+        }} transition={{
+          duration: 0.5
+        }}>
+            <h1 className="text-4xl font-bold leading-tight mb-4 text-center md:text-6xl">Welcome to the best hacks store</h1>
+            <motion.p className="mb-8 mx-[2px] text-xl" variants={colorVariants} animate="animate">
               Join the dark side with the best mod menus on the market for your favorite antiban game
             </motion.p>
             <div className="flex flex-wrap gap-4">
@@ -59,25 +56,18 @@ const Index: React.FC = () => {
               </Button>
             </div>
           </motion.div>
-          <motion.div 
-            className="relative w-full max-w-full aspect-video"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <iframe 
-              ref={videoRef}
-              src="https://www.tiktok.com/embed/7476562410388655415?autoplay=1&mute=0" 
-              width="100%" 
-              height="500px" 
-              allow="autoplay"
-              allowFullScreen 
-              className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
-            ></iframe>
-            <Button 
-              onClick={pauseVideo} 
-              className="absolute top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center"
-            >
+          <motion.div className="relative w-full max-w-full aspect-video" initial={{
+          opacity: 0,
+          scale: 0.9
+        }} animate={{
+          opacity: 1,
+          scale: 1
+        }} transition={{
+          duration: 0.5,
+          delay: 0.2
+        }}>
+            <iframe ref={videoRef} src="https://www.tiktok.com/embed/7476562410388655415?autoplay=1&mute=0" width="100%" height="500px" allow="autoplay" allowFullScreen className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"></iframe>
+            <Button onClick={pauseVideo} className="absolute top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center">
               <PauseCircle className="mr-2" />
               Pause Video
             </Button>
@@ -85,13 +75,15 @@ const Index: React.FC = () => {
         </div>
       </section>
       
-      {isAuthenticated && user && (
-        <motion.section 
-          className="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+      {isAuthenticated && user && <motion.section className="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700" initial={{
+      opacity: 0,
+      y: 20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      duration: 0.3
+    }}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold">Welcome back, {user.username}!</h2>
@@ -104,8 +96,7 @@ const Index: React.FC = () => {
               <Button className="bg-shop-blue hover:bg-shop-darkBlue" size="sm">View History</Button>
             </div>
           </div>
-        </motion.section>
-      )}
+        </motion.section>}
       
       <section className="mb-12">
         <div className="flex justify-between items-center mb-8">
@@ -120,8 +111,6 @@ const Index: React.FC = () => {
         </div>
         <ProductGrid products={featuredProducts} />
       </section>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default Index;
