@@ -1,18 +1,28 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useShop } from "@/contexts/ShopContext";
 import MainLayout from "@/components/layout/MainLayout";
 import ProductGrid from "@/components/shop/ProductGrid";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShoppingBag, ChevronRight, Sparkles, Shield, Clock, CreditCard } from "lucide-react";
+import { ShoppingBag, ChevronRight, PauseCircle } from "lucide-react";
 
 const Index: React.FC = () => {
   const { products, isAuthenticated, user } = useShop();
   
-  // Get featured products (first 4 for now)
+  // Featured products (first 4)
   const featuredProducts = products.slice(0, 4);
   
+  // TikTok Video Ref for controlling playback
+  const videoRef = useRef<HTMLIFrameElement>(null);
+
+  // Pause the video by reloading the iframe (TikTok doesn't provide JS API)
+  const pauseVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.src = videoRef.current.src; // Reloads the iframe
+    }
+  };
+
   return (
     <MainLayout>
       {/* Hero Section */}
@@ -41,25 +51,36 @@ const Index: React.FC = () => {
             </div>
           </motion.div>
           
+          {/* TikTok Video Embed with Autoplay & Pause */}
           <motion.div 
             className="relative w-full max-w-full aspect-video"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            {/* TikTok Video Embed */}
             <iframe 
-              src="https://www.tiktok.com/embed/7476562410388655415" 
+              ref={videoRef}
+              src="https://www.tiktok.com/embed/7476562410388655415?autoplay=1&mute=0" 
               width="100%" 
               height="500px" 
+              allow="autoplay"
               allowFullScreen 
               className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
             ></iframe>
+            
+            {/* Pause Button */}
+            <Button 
+              onClick={pauseVideo} 
+              className="absolute top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center"
+            >
+              <PauseCircle className="mr-2" />
+              Pause Video
+            </Button>
           </motion.div>
         </div>
       </section>
       
-      {/* Welcome Section for logged in users */}
+      {/* Welcome Section for logged-in users */}
       {isAuthenticated && user && (
         <motion.section 
           className="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
@@ -103,59 +124,8 @@ const Index: React.FC = () => {
         
         <ProductGrid products={featuredProducts} />
       </section>
-      
-      {/* Features */}
-      <section className="mb-12 py-10 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold mb-2">Why Choose Us</h2>
-          <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
-            We provide the highest quality gaming products with unmatched service
-          </p>
-        </div>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[ 
-            { icon: <Sparkles className="h-6 w-6 text-shop-blue" />, title: "Premium Quality", description: "Only the best gaming products are offered in our store" },
-            { icon: <Shield className="h-6 w-6 text-shop-blue" />, title: "Secure Transactions", description: "Your payments and personal information are fully protected" },
-            { icon: <Clock className="h-6 w-6 text-shop-blue" />, title: "Instant Delivery", description: "Receive your digital products immediately after purchase" },
-            { icon: <CreditCard className="h-6 w-6 text-shop-blue" />, title: "Multiple Payment Options", description: "Choose from several convenient payment methods" }
-          ].map((feature, index) => (
-            <motion.div 
-              key={index}
-              className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <div className="mb-4 rounded-full bg-shop-blue/10 p-3 w-12 h-12 flex items-center justify-center">
-                {feature.icon}
-              </div>
-              <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-      
-      {/* CTA Section */}
-      <section className="mb-8">
-        <div className="bg-gradient-to-r from-shop-blue to-purple-600 rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-6 py-12 md:p-12 text-white">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to Enhance Your Gaming?</h2>
-              <p className="text-white/80 mb-8 text-lg">
-                Join thousands of satisfied gamers who have taken their experience to the next level
-              </p>
-              <Button size="lg" variant="secondary" className="bg-white text-shop-blue hover:bg-gray-100">
-                Browse Products
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
     </MainLayout>
   );
 };
 
 export default Index;
-'
