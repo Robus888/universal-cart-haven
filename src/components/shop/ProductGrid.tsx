@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Product } from "@/contexts/ShopContext";
+import type { Product } from "@/types/shop";
 import ProductCard from "./ProductCard";
 import { motion } from "framer-motion";
 

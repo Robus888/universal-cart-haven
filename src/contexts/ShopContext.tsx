@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,9 +5,10 @@ import { toast } from "@/components/ui/use-toast";
 import type { 
   Currency, 
   Language, 
-  Product, 
   User, 
-  ShopContextType 
+  ShopContextType,
+  Announcement,
+  AnnouncementAudience 
 } from "@/types/shop";
 import { sampleProducts } from "@/data/sampleProducts";
 import { 
@@ -29,6 +29,9 @@ import {
   viewProductDetails 
 } from "@/services/productService";
 import { useTheme } from "@/hooks/useTheme";
+
+// Export the Product type from types/shop.ts
+export type { Product } from "@/types/shop";
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);

@@ -2,7 +2,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useShop, Product } from "@/contexts/ShopContext";
+import { useShop } from "@/contexts/ShopContext";
+import type { Product } from "@/types/shop";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 

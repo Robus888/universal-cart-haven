@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
-import { useShop, Product } from "@/contexts/ShopContext";
+import { useShop } from "@/contexts/ShopContext";
+import type { Product } from "@/types/shop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Eye, Download } from "lucide-react";
