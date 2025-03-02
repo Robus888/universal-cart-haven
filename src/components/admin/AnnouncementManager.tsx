@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,6 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { AnnouncementAudience } from "@/types/shop";
-import { User } from "lucide-react";
 
 const AnnouncementManager: React.FC = () => {
   const [title, setTitle] = useState("");
@@ -41,13 +39,18 @@ const AnnouncementManager: React.FC = () => {
       if (error) throw error;
       setUsers(data || []);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("❌ Error fetching users:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load users.",
+      });
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim() || !message.trim()) {
       toast({
         variant: "destructive",
@@ -56,35 +59,41 @@ const AnnouncementManager: React.FC = () => {
       });
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      
-      const { error } = await supabase
+
+      const { data, error } = await supabase
         .from("announcements")
-        .insert({
-          title,
-          message,
-          created_by: user?.id,
-          active: true,
-          audience,
-          target_user_id: audience === "specific" ? targetUser : null
-        });
-        
+        .insert([
+          {
+            title,
+            message,
+            created_by: user?.id, // Ensure user ID is valid
+            active: true,
+            audience,
+            target_user_id: audience === "specific" ? targetUser : null,
+            created_at: new Date().toISOString(), // Ensures created_at field is populated
+          }
+        ])
+        .select(); // Fetch inserted data
+
+      console.log("✅ Supabase response:", data);
+
       if (error) throw error;
-      
+
       toast({
         title: "Success",
         description: "Announcement created successfully",
       });
-      
+
       // Reset form
       setTitle("");
       setMessage("");
       setAudience("all");
       setTargetUser("");
     } catch (error) {
-      console.error("Error creating announcement:", error);
+      console.error("❌ Error creating announcement:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -94,7 +103,7 @@ const AnnouncementManager: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <Card>
       <CardHeader>
@@ -103,6 +112,7 @@ const AnnouncementManager: React.FC = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Title Input */}
           <div className="space-y-2">
             <label htmlFor="title" className="text-sm font-medium">
               Title
@@ -115,7 +125,8 @@ const AnnouncementManager: React.FC = () => {
               required
             />
           </div>
-          
+
+          {/* Message Input */}
           <div className="space-y-2">
             <label htmlFor="message" className="text-sm font-medium">
               Message
@@ -130,6 +141,7 @@ const AnnouncementManager: React.FC = () => {
             />
           </div>
 
+          {/* Audience Selection */}
           <div className="space-y-2">
             <label htmlFor="audience" className="text-sm font-medium">
               Audience
@@ -147,7 +159,8 @@ const AnnouncementManager: React.FC = () => {
               </SelectContent>
             </Select>
           </div>
-          
+
+          {/* Target User Selection (Only if Specific User is Chosen) */}
           {audience === "specific" && (
             <div className="space-y-2">
               <label htmlFor="targetUser" className="text-sm font-medium">
@@ -170,7 +183,8 @@ const AnnouncementManager: React.FC = () => {
               </Select>
             </div>
           )}
-          
+
+          {/* Submit Button */}
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Creating..." : "Create Announcement"}
           </Button>
