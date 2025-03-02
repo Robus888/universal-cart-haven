@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useShop } from "@/contexts/ShopContext";
 import MainLayout from "@/components/layout/MainLayout";
 import ProductGrid from "@/components/shop/ProductGrid";
@@ -26,11 +26,28 @@ const Index: React.FC = () => {
   const videoRef = useRef<HTMLIFrameElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Function to reload the video for looping effect
+  const reloadVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.src = videoRef.current.src;
+    }
+  };
+
+  // Auto-reload the video every 30 seconds (adjust timing based on video length)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isPaused) {
+        reloadVideo();
+      }
+    }, 30000); // Adjust timing based on the average video length
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
   const toggleVideo = () => {
     if (videoRef.current) {
       if (isPaused) {
-        // Restart video by resetting the src
-        videoRef.current.src = videoRef.current.src;
+        reloadVideo(); // Restart video if paused
       }
       setIsPaused(!isPaused);
     }
