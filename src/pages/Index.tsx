@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useShop } from "@/contexts/ShopContext";
 import MainLayout from "@/components/layout/MainLayout";
@@ -43,51 +42,31 @@ const Index: React.FC = () => {
           </motion.div>
           
           <motion.div 
-            className="relative"
+            className="relative w-full max-w-full aspect-video"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="bg-gradient-to-br from-shop-blue/20 to-purple-500/20 rounded-xl p-8 aspect-video flex items-center justify-center">
-              <img 
-                src="/lovable-uploads/af231cf1-f65f-4947-a1cb-fe4328f1d729.png" 
-                alt="Gaming Products" 
-                className="max-w-full max-h-[300px] object-contain"
-              />
-            </div>
-            <div className="absolute -bottom-4 -right-4 bg-shop-blue text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg">
-              Premium Quality
-            </div>
+            {/* TikTok Video Embed */}
+            <blockquote 
+              className="tiktok-embed" 
+              cite="https://www.tiktok.com/@yowxmods/video/7476562410388655415" 
+              data-video-id="7476562410388655415" 
+              style={{ maxWidth: "100%", minWidth: "325px" }}
+            >
+              <section> 
+                <a target="_blank" title="@yowxmods" href="https://www.tiktok.com/@yowxmods?refer=embed">@yowxmods</a> Shines ✨ 
+                <a title="freefire" target="_blank" href="https://www.tiktok.com/tag/freefire?refer=embed">#freefire</a> 
+                <a title="nostalgia" target="_blank" href="https://www.tiktok.com/tag/nostalgia?refer=embed">#nostalgia</a> 
+                <a title="highlight" target="_blank" href="https://www.tiktok.com/tag/highlight?refer=embed">#highlight</a> 
+                <a title="sensibilidadefreefire" target="_blank" href="https://www.tiktok.com/tag/sensibilidadefreefire?refer=embed">#sensibilidadefreefire</a> 
+                <a target="_blank" title="♬ original sound - YOWX MODS" href="https://www.tiktok.com/music/original-sound-7476562436414409478?refer=embed">♬ original sound - YOWX MODS</a> 
+              </section>
+            </blockquote>
+            <script async src="https://www.tiktok.com/embed.js"></script>
           </motion.div>
         </div>
       </section>
-      
-      {/* Welcome Section for logged in users */}
-      {isAuthenticated && user && (
-        <motion.section 
-          className="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold">Welcome back, {user.username}!</h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Your current balance: <span className="font-medium">${user.balance.toFixed(2)}</span>
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                Add Funds
-              </Button>
-              <Button className="bg-shop-blue hover:bg-shop-darkBlue" size="sm">
-                View History
-              </Button>
-            </div>
-          </div>
-        </motion.section>
-      )}
       
       {/* Featured Products */}
       <section className="mb-12">
@@ -117,8 +96,7 @@ const Index: React.FC = () => {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
+          {[{
               icon: <Sparkles className="h-6 w-6 text-shop-blue" />,
               title: "Premium Quality",
               description: "Only the best gaming products are offered in our store"
