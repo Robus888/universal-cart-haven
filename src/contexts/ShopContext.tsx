@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,8 @@ import type {
   User, 
   ShopContextType,
   Announcement,
-  AnnouncementAudience 
+  AnnouncementAudience,
+  Product
 } from "@/types/shop";
 import { sampleProducts } from "@/data/sampleProducts";
 import { 
@@ -30,7 +32,7 @@ import {
 } from "@/services/productService";
 import { useTheme } from "@/hooks/useTheme";
 
-// Export the Product type from types/shop.ts
+// Re-export the Product type for components to use
 export type { Product } from "@/types/shop";
 
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
