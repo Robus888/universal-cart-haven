@@ -48,25 +48,43 @@ const Index: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             {/* TikTok Video Embed */}
-            <blockquote 
-              className="tiktok-embed" 
-              cite="https://www.tiktok.com/@yowxmods/video/7476562410388655415" 
-              data-video-id="7476562410388655415" 
-              style={{ maxWidth: "100%", minWidth: "325px" }}
-            >
-              <section> 
-                <a target="_blank" title="@yowxmods" href="https://www.tiktok.com/@yowxmods?refer=embed">@yowxmods</a> Shines ✨ 
-                <a title="freefire" target="_blank" href="https://www.tiktok.com/tag/freefire?refer=embed">#freefire</a> 
-                <a title="nostalgia" target="_blank" href="https://www.tiktok.com/tag/nostalgia?refer=embed">#nostalgia</a> 
-                <a title="highlight" target="_blank" href="https://www.tiktok.com/tag/highlight?refer=embed">#highlight</a> 
-                <a title="sensibilidadefreefire" target="_blank" href="https://www.tiktok.com/tag/sensibilidadefreefire?refer=embed">#sensibilidadefreefire</a> 
-                <a target="_blank" title="♬ original sound - YOWX MODS" href="https://www.tiktok.com/music/original-sound-7476562436414409478?refer=embed">♬ original sound - YOWX MODS</a> 
-              </section>
-            </blockquote>
-            <script async src="https://www.tiktok.com/embed.js"></script>
+            <iframe 
+              src="https://www.tiktok.com/embed/7476562410388655415" 
+              width="100%" 
+              height="500px" 
+              allowFullScreen 
+              className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+            ></iframe>
           </motion.div>
         </div>
       </section>
+      
+      {/* Welcome Section for logged in users */}
+      {isAuthenticated && user && (
+        <motion.section 
+          className="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold">Welcome back, {user.username}!</h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Your current balance: <span className="font-medium">${user.balance.toFixed(2)}</span>
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                Add Funds
+              </Button>
+              <Button className="bg-shop-blue hover:bg-shop-darkBlue" size="sm">
+                View History
+              </Button>
+            </div>
+          </div>
+        </motion.section>
+      )}
       
       {/* Featured Products */}
       <section className="mb-12">
@@ -96,26 +114,11 @@ const Index: React.FC = () => {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[{
-              icon: <Sparkles className="h-6 w-6 text-shop-blue" />,
-              title: "Premium Quality",
-              description: "Only the best gaming products are offered in our store"
-            },
-            {
-              icon: <Shield className="h-6 w-6 text-shop-blue" />,
-              title: "Secure Transactions",
-              description: "Your payments and personal information are fully protected"
-            },
-            {
-              icon: <Clock className="h-6 w-6 text-shop-blue" />,
-              title: "Instant Delivery",
-              description: "Receive your digital products immediately after purchase"
-            },
-            {
-              icon: <CreditCard className="h-6 w-6 text-shop-blue" />,
-              title: "Multiple Payment Options",
-              description: "Choose from several convenient payment methods"
-            }
+          {[ 
+            { icon: <Sparkles className="h-6 w-6 text-shop-blue" />, title: "Premium Quality", description: "Only the best gaming products are offered in our store" },
+            { icon: <Shield className="h-6 w-6 text-shop-blue" />, title: "Secure Transactions", description: "Your payments and personal information are fully protected" },
+            { icon: <Clock className="h-6 w-6 text-shop-blue" />, title: "Instant Delivery", description: "Receive your digital products immediately after purchase" },
+            { icon: <CreditCard className="h-6 w-6 text-shop-blue" />, title: "Multiple Payment Options", description: "Choose from several convenient payment methods" }
           ].map((feature, index) => (
             <motion.div 
               key={index}
@@ -128,9 +131,7 @@ const Index: React.FC = () => {
                 {feature.icon}
               </div>
               <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                {feature.description}
-              </p>
+              <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
             </motion.div>
           ))}
         </div>
@@ -157,3 +158,4 @@ const Index: React.FC = () => {
 };
 
 export default Index;
+'
