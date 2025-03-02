@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
 
             <NavLink to="/" className="flex items-center space-x-2">
               <img 
-                src="https://cdn.discordapp.com/attachments/1092192491840737421/1344813833675604019/IMG_4837.png?ex=67c246fb&is=67c0f57b&hm=70a394743fb2a83b82ae74ddfbe72f8a27d3d7c5f0311d47c63cb30a5319b2a1&" 
+                src="https://cdn.discordapp.com/attachments/1092192491840737421/1344813833675604019/IMG_4837.png?ex=67c4e9fb&is=67c3987b&hm=0d8a26417443b8762f6ad41a40ac78296aafdbcc96e0d9c8abaceb69b102784c&" 
                 alt="Yowx Mods Shop" 
                 className="shop-logo" 
               />
