@@ -18,7 +18,7 @@ const UserBalanceManager: React.FC = () => {
   const [users, setUsers] = useState<Profile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
@@ -186,9 +186,7 @@ const UserBalanceManager: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-shop-blue"></div>
-          </div>
+          <div className="text-center py-4">Loading users...</div>
         ) : filteredUsers.length === 0 ? (
           <div className="text-center py-4">No users found</div>
         ) : (

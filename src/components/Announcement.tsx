@@ -1,114 +1,104 @@
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import { useShop } from "@/contexts/ShopContext";
 import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Announcement as AnnouncementType } from "@/types/shop";
 
-const Announcement = () => {
+const Announcement: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState<AnnouncementType | null>(null);
+  const { toast } = useToast();
   const { user } = useShop();
-  const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-  
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, [user]);
+
   const fetchAnnouncements = async () => {
-    if (!user) return;
-    
     try {
-      const { data, error } = await supabase
+      // First try to get announcements targeted to this user
+      let query = supabase
         .from("announcements")
         .select("*")
         .eq("active", true)
-        .or(`audience.eq.all,target_user_id.eq.${user.id}`);
-      
-      if (error) {
-        console.error("Error fetching announcements:", error);
-        return;
+        .order("created_at", { ascending: false });
+
+      if (user) {
+        // If user is logged in, get announcements for either all users or specifically for this user
+        query = query.or(`audience.eq.all,and(audience.eq.specific,target_user_id.eq.${user.id})`);
+      } else {
+        // If no user is logged in, only get announcements for all users
+        query = query.eq("audience", "all");
       }
+
+      const { data, error } = await query.limit(1);
+
+      if (error) throw error;
       
-      // Filter out announcements that have been viewed in this session
-      const viewedAnnouncementIds = JSON.parse(sessionStorage.getItem('viewedAnnouncements') || '[]');
-      const newAnnouncements = data.filter(
-        announcement => !viewedAnnouncementIds.includes(announcement.id)
-      );
-      
-      if (newAnnouncements.length > 0) {
-        setAnnouncements(newAnnouncements);
-        setIsVisible(true);
+      if (data && data.length > 0) {
+        // Check if the announcement was dismissed before
+        const dismissedAnnouncements = JSON.parse(localStorage.getItem("dismissedAnnouncements") || "[]");
+        if (!dismissedAnnouncements.includes(data[0].id)) {
+          setAnnouncement(data[0] as AnnouncementType);
+          setOpen(true);
+        }
       }
     } catch (error) {
-      console.error("Error in fetchAnnouncements:", error);
+      console.error("Error fetching announcement:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load announcements",
+      });
     }
   };
-  
-  useEffect(() => {
-    fetchAnnouncements();
-    
-    // Set up interval to check for new announcements every 5 minutes
-    const interval = setInterval(fetchAnnouncements, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [user]);
-  
-  const handleDismiss = () => {
-    // Store this announcement as viewed in session storage
-    const viewedAnnouncementIds = JSON.parse(sessionStorage.getItem('viewedAnnouncements') || '[]');
-    viewedAnnouncementIds.push(announcements[currentIndex].id);
-    sessionStorage.setItem('viewedAnnouncements', JSON.stringify(viewedAnnouncementIds));
-    
-    if (currentIndex < announcements.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      setIsVisible(false);
-      setCurrentIndex(0);
-    }
+
+  const handleClose = () => {
+    setOpen(false);
   };
-  
-  // If no announcements or not visible, don't render anything
-  if (!isVisible || announcements.length === 0) return null;
-  
-  const currentAnnouncement = announcements[currentIndex];
-  
+
+  const handleDontShowAgain = () => {
+    if (announcement) {
+      const dismissedAnnouncements = JSON.parse(localStorage.getItem("dismissedAnnouncements") || "[]");
+      dismissedAnnouncements.push(announcement.id);
+      localStorage.setItem("dismissedAnnouncements", JSON.stringify(dismissedAnnouncements));
+    }
+    setOpen(false);
+  };
+
+  if (!announcement) return null;
+
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
-          transition={{ duration: 0.3 }}
-          className="fixed bottom-4 right-4 z-50 max-w-md"
-        >
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {currentAnnouncement.title}
-                </h3>
-                <button 
-                  onClick={handleDismiss} 
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                {currentAnnouncement.message}
-              </p>
-              <div className="flex justify-end">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleDismiss}
-                >
-                  Dismiss
-                </Button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">{announcement.title}</DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-4 top-4"
+            onClick={handleClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </DialogHeader>
+        <div className="py-4">
+          <p className="whitespace-pre-wrap">{announcement.message}</p>
+        </div>
+        <DialogFooter className="flex sm:justify-between">
+          <Button variant="secondary" onClick={handleDontShowAgain}>
+            Don't show again
+          </Button>
+          <Button variant="default" onClick={handleClose}>
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
