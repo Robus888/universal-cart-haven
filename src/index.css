@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -121,5 +120,23 @@
   
   .wallet-button {
     @apply flex items-center space-x-2 px-3 py-2 rounded-md bg-shop-blue text-white hover:bg-shop-darkBlue transition-colors;
+  }
+
+  /* === RAINBOW BORDER ANIMATION FOR VIDEO === */
+  @keyframes rainbow-border {
+    0% { border-color: red; }
+    16% { border-color: orange; }
+    33% { border-color: yellow; }
+    50% { border-color: green; }
+    66% { border-color: blue; }
+    83% { border-color: indigo; }
+    100% { border-color: violet; }
+  }
+
+  .rainbow-border {
+    border-width: 6px;
+    border-style: solid;
+    border-radius: 12px;
+    animation: rainbow-border 6s infinite linear;
   }
 }
