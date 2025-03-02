@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useShop } from "@/contexts/ShopContext";
 import MainLayout from "@/components/layout/MainLayout";
 import ProductGrid from "@/components/shop/ProductGrid";
@@ -25,6 +25,12 @@ const Index: React.FC = () => {
   // Video control states
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(err => console.error("Autoplay failed", err));
+    }
+  }, []);
 
   const toggleVideo = () => {
     if (videoRef.current) {
@@ -71,16 +77,18 @@ const Index: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <video
-              ref={videoRef}
-              src="/videos/sample.mp4"  // Change this to your actual video file
-              width="100%"
-              height="500px"
-              className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
-              autoPlay
-              loop
-              muted
-            />
+            <div className="rainbow-border p-2 rounded-xl">
+              <video
+                ref={videoRef}
+                src="/videos/sample.mp4"  // Change this to your actual video file
+                width="100%"
+                height="500px"
+                className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+                autoPlay
+                loop
+                controls
+              />
+            </div>
             <Button
               onClick={toggleVideo}
               className="absolute top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center"
