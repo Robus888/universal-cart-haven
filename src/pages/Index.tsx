@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { useShop } from "@/contexts/ShopContext";
 import MainLayout from "@/components/layout/MainLayout";
 import ProductGrid from "@/components/shop/ProductGrid";
@@ -21,33 +21,17 @@ const colorVariants = {
 const Index: React.FC = () => {
   const { products, isAuthenticated, user } = useShop();
   const featuredProducts = products.slice(0, 4);
-  
+
   // Video control states
-  const videoRef = useRef<HTMLIFrameElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isPaused, setIsPaused] = useState(false);
-
-  // Function to reload the video for looping effect
-  const reloadVideo = () => {
-    if (videoRef.current) {
-      videoRef.current.src = videoRef.current.src;
-    }
-  };
-
-  // Auto-reload the video every 30 seconds (adjust timing based on video length)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isPaused) {
-        reloadVideo();
-      }
-    }, 30000); // Adjust timing based on the average video length
-
-    return () => clearInterval(interval);
-  }, [isPaused]);
 
   const toggleVideo = () => {
     if (videoRef.current) {
       if (isPaused) {
-        reloadVideo(); // Restart video if paused
+        videoRef.current.play();
+      } else {
+        videoRef.current.pause();
       }
       setIsPaused(!isPaused);
     }
@@ -87,14 +71,15 @@ const Index: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <iframe
+            <video
               ref={videoRef}
-              src="https://www.tiktok.com/embed/7476562410388655415?autoplay=1&mute=0"
+              src="/videos/sample.mp4"  // Change this to your actual video file
               width="100%"
               height="500px"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
               className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
+              autoPlay
+              loop
+              muted
             />
             <Button
               onClick={toggleVideo}
