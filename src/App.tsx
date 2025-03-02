@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ShopProvider } from "./contexts/ShopContext";
@@ -21,8 +22,8 @@ export default function App() {
   return (
     <>
       <BrowserRouter>
-        <ShopProvider>
-          <ThemeProvider>
+        <ThemeProvider>
+          <ShopProvider>
             <Toaster />
             <Routes>
               <Route path="/" element={<Index />} />
@@ -39,8 +40,8 @@ export default function App() {
             </Routes>
             <Announcement />
           </ShopProvider>
-        </BrowserRouter>
-      </ThemeProvider>
+        </ThemeProvider>
+      </BrowserRouter>
     </>
   );
 }
