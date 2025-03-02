@@ -12,28 +12,34 @@ export type Database = {
       announcements: {
         Row: {
           active: boolean | null
+          audience: string | null
           created_at: string | null
           created_by: string | null
           id: string
           message: string
+          target_user_id: string | null
           title: string
           updated_at: string | null
         }
         Insert: {
           active?: boolean | null
+          audience?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           message: string
+          target_user_id?: string | null
           title: string
           updated_at?: string | null
         }
         Update: {
           active?: boolean | null
+          audience?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           message?: string
+          target_user_id?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -50,28 +56,34 @@ export type Database = {
       profiles: {
         Row: {
           balance: number | null
+          banned: boolean | null
           created_at: string | null
           email: string | null
           id: string
           is_admin: boolean | null
+          is_owner: boolean | null
           updated_at: string | null
           username: string | null
         }
         Insert: {
           balance?: number | null
+          banned?: boolean | null
           created_at?: string | null
           email?: string | null
           id: string
           is_admin?: boolean | null
+          is_owner?: boolean | null
           updated_at?: string | null
           username?: string | null
         }
         Update: {
           balance?: number | null
+          banned?: boolean | null
           created_at?: string | null
           email?: string | null
           id?: string
           is_admin?: boolean | null
+          is_owner?: boolean | null
           updated_at?: string | null
           username?: string | null
         }
