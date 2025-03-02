@@ -11,7 +11,7 @@ import { Announcement as AnnouncementType } from "@/types/shop";
 const Announcement: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [announcement, setAnnouncement] = useState<AnnouncementType | null>(null);
-  const { toast, dismiss } = useToast();
+  const { toast } = useToast();
   const { user } = useShop();
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const Announcement: React.FC = () => {
         // Check if the announcement was dismissed before
         const dismissedAnnouncements = JSON.parse(localStorage.getItem("dismissedAnnouncements") || "[]");
         if (!dismissedAnnouncements.includes(data[0].id)) {
-          setAnnouncement(data[0]);
+          setAnnouncement(data[0] as AnnouncementType);
           setOpen(true);
         }
       }

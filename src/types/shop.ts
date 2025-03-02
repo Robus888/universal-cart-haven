@@ -8,6 +8,8 @@ export type User = {
   email: string;
   balance: number;
   is_admin?: boolean;
+  is_owner?: boolean;
+  banned?: boolean;
 };
 
 export type Product = {
@@ -33,6 +35,8 @@ export type Announcement = {
   active: boolean;
   audience: AnnouncementAudience;
   target_user_id?: string | null;
+  created_by?: string | null;
+  updated_at?: string | null;
 };
 
 export type ShopContextType = {

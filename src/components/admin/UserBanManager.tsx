@@ -5,25 +5,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, Ban, Shield } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Profile {
   id: string;
   username: string;
   email: string;
-  balance: number;
+  banned: boolean;
 }
 
-const UserBalanceManager: React.FC = () => {
+const UserBanManager: React.FC = () => {
   const [users, setUsers] = useState<Profile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
-
-  // New balance amount to set
-  const [newBalances, setNewBalances] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchUsers();
@@ -49,23 +48,19 @@ const UserBalanceManager: React.FC = () => {
       
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, username, email, banned")
         .order("username");
 
       if (error) throw error;
 
       // Type checking to ensure data is an array
-      const userProfiles = Array.isArray(data) ? data : [];
+      const userProfiles = Array.isArray(data) ? data.map(profile => ({
+        ...profile,
+        banned: !!profile.banned // Ensure banned is a boolean
+      })) : [];
       
       setUsers(userProfiles);
       setFilteredUsers(userProfiles);
-      
-      // Initialize newBalances with current values
-      const balances: Record<string, string> = {};
-      userProfiles.forEach(user => {
-        balances[user.id] = user.balance?.toString() || "0";
-      });
-      setNewBalances(balances);
       
       console.log("Fetched users:", userProfiles);
     } catch (error) {
@@ -80,67 +75,41 @@ const UserBalanceManager: React.FC = () => {
     }
   };
 
-  const handleBalanceChange = (userId: string, value: string) => {
-    // Ensure value is a valid number or empty string
-    if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
-      setNewBalances({
-        ...newBalances,
-        [userId]: value,
-      });
-    }
-  };
-
-  const updateBalance = async (userId: string) => {
+  const toggleUserBan = async (userId: string, currentStatus: boolean) => {
     try {
-      const newBalanceStr = newBalances[userId] || "0";
-      const newBalance = parseFloat(newBalanceStr);
+      const newStatus = !currentStatus;
       
-      if (isNaN(newBalance)) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please enter a valid number",
-        });
-        return;
-      }
-
-      // Update the balance in Supabase
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from("profiles")
-        .update({ balance: newBalance })
-        .eq("id", userId)
-        .select();
+        .update({ banned: newStatus })
+        .eq("id", userId);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "User balance updated successfully",
+        description: `User ${newStatus ? 'banned' : 'unbanned'} successfully`,
       });
 
-      console.log("Updated balance:", data);
-
-      // Update local state with the response from Supabase
-      if (data && data.length > 0) {
-        setUsers(prevUsers =>
-          prevUsers.map((user) =>
-            user.id === userId ? { ...user, balance: data[0].balance } : user
-          )
-        );
-        
-        // Update filtered users as well
-        setFilteredUsers(prevFiltered =>
-          prevFiltered.map((user) =>
-            user.id === userId ? { ...user, balance: data[0].balance } : user
-          )
-        );
-      }
+      // Update local state
+      setUsers(prevUsers =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, banned: newStatus } : user
+        )
+      );
+      
+      // Update filtered users as well
+      setFilteredUsers(prevFiltered =>
+        prevFiltered.map((user) =>
+          user.id === userId ? { ...user, banned: newStatus } : user
+        )
+      );
     } catch (error) {
-      console.error("Error updating balance:", error);
+      console.error("Error updating ban status:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update balance",
+        description: "Failed to update user ban status",
       });
     }
   };
@@ -160,8 +129,8 @@ const UserBalanceManager: React.FC = () => {
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Manage User Balances</CardTitle>
-            <CardDescription>Update user account balances</CardDescription>
+            <CardTitle>Ban Users</CardTitle>
+            <CardDescription>Manage user access to the platform</CardDescription>
           </div>
           <Button 
             variant="outline" 
@@ -194,22 +163,27 @@ const UserBalanceManager: React.FC = () => {
             {filteredUsers.map((user) => (
               <div
                 key={user.id}
-                className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-md"
+                className="flex justify-between items-center p-4 border rounded-md"
               >
-                <div className="mb-2 sm:mb-0">
-                  <p className="font-medium">{user.username || 'No username'}</p>
+                <div>
+                  <div className="flex items-center">
+                    {user.banned ? 
+                      <Ban className="h-4 w-4 text-red-500 mr-2" /> : 
+                      <Shield className="h-4 w-4 text-green-500 mr-2" />
+                    }
+                    <p className="font-medium">{user.username || 'No username'}</p>
+                  </div>
                   <p className="text-sm text-gray-500">{user.email || 'No email'}</p>
-                  <p className="text-xs text-gray-500">Current balance: ${user.balance?.toFixed(2) || '0.00'}</p>
                 </div>
-                <div className="flex items-center space-x-2 w-full sm:w-auto">
-                  <Input
-                    type="text"
-                    value={newBalances[user.id] || ""}
-                    onChange={(e) => handleBalanceChange(user.id, e.target.value)}
-                    className="w-32"
-                    placeholder="0.00"
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id={`ban-${user.id}`}
+                    checked={user.banned}
+                    onCheckedChange={() => toggleUserBan(user.id, user.banned)}
                   />
-                  <Button onClick={() => updateBalance(user.id)}>Update</Button>
+                  <Label htmlFor={`ban-${user.id}`} className="text-sm">
+                    {user.banned ? 'Banned' : 'Active'}
+                  </Label>
                 </div>
               </div>
             ))}
@@ -220,4 +194,4 @@ const UserBalanceManager: React.FC = () => {
   );
 };
 
-export default UserBalanceManager;
+export default UserBanManager;

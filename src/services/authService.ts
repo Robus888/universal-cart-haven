@@ -17,12 +17,25 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
     }
     
     if (data) {
+      // Check if user is banned
+      if (data.banned) {
+        toast({
+          variant: "destructive",
+          title: "Account Banned",
+          description: "Your account has been banned. Please contact support for assistance.",
+        });
+        await supabase.auth.signOut();
+        return null;
+      }
+      
       const userData: User = {
         id: data.id,
         username: data.username || 'User',
         email: data.email || '',
         balance: Number(data.balance) || 0,
-        is_admin: !!data.is_admin
+        is_admin: !!data.is_admin,
+        is_owner: !!data.is_owner,
+        banned: !!data.banned
       };
       
       return userData;
@@ -38,7 +51,9 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
             username: authData.user.user_metadata.username || authData.user.email?.split('@')[0] || 'User',
             email: authData.user.email,
             balance: 0,
-            is_admin: false
+            is_admin: false,
+            is_owner: false,
+            banned: false
           });
           
         if (insertError) {
@@ -59,7 +74,9 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
             username: newProfile.username || 'User',
             email: newProfile.email || '',
             balance: Number(newProfile.balance) || 0,
-            is_admin: !!newProfile.is_admin
+            is_admin: !!newProfile.is_admin,
+            is_owner: !!newProfile.is_owner,
+            banned: !!newProfile.banned
           };
           
           return userData;
@@ -92,6 +109,17 @@ export const login = async (email: string, password: string): Promise<User | nul
       const userProfile = await fetchUserProfile(data.user.id);
       
       if (userProfile) {
+        // Check if the user is banned
+        if (userProfile.banned) {
+          toast({
+            variant: "destructive",
+            title: "Account Banned",
+            description: "Your account has been banned. Please contact support for assistance.",
+          });
+          await supabase.auth.signOut();
+          return null;
+        }
+        
         toast({
           title: "Successfully logged in",
           description: `Welcome back, ${userProfile.username}!`,
