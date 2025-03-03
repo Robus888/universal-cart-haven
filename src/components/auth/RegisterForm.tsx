@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useShop } from "@/contexts/ShopContext";
 import { useNavigate, NavLink } from "react-router-dom";
@@ -49,6 +50,7 @@ const RegisterForm: React.FC = () => {
   
   const onSubmit = async (values: RegisterFormValues) => {
     try {
+      console.log("Attempting registration with:", values.email);
       await register(values.username, values.email, values.password);
       toast({
         title: "Account created successfully",
@@ -87,7 +89,7 @@ const RegisterForm: React.FC = () => {
   
   return (
     <motion.div 
-      className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mx-auto"
+      className="bg-black/80 backdrop-blur-xl p-8 rounded-lg shadow-lg max-w-md w-full mx-auto border border-white/10"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -100,8 +102,8 @@ const RegisterForm: React.FC = () => {
             className="h-16 w-16 object-cover" 
           />
         </div>
-        <h1 className="text-2xl font-bold">Create an account</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Sign up to get started</p>
+        <h1 className="text-2xl font-bold text-white">Create an account</h1>
+        <p className="text-gray-400 mt-1">Sign up to get started</p>
       </div>
       
       <Form {...form}>
@@ -111,11 +113,12 @@ const RegisterForm: React.FC = () => {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel className="text-white">Username</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter your username"
                     autoComplete="username"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -129,12 +132,13 @@ const RegisterForm: React.FC = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-white">Email</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter your email"
                     type="email"
                     autoComplete="email"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -148,12 +152,13 @@ const RegisterForm: React.FC = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel className="text-white">Password</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Create a password"
                     type="password"
                     autoComplete="new-password"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -167,12 +172,13 @@ const RegisterForm: React.FC = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
+                <FormLabel className="text-white">Confirm Password</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Confirm your password"
                     type="password"
                     autoComplete="new-password"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -190,11 +196,11 @@ const RegisterForm: React.FC = () => {
           </Button>
           
           <div className="text-center mt-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-400">
               Already have an account?{" "}
               <NavLink
                 to="/login"
-                className="text-shop-blue hover:underline font-medium"
+                className="text-blue-400 hover:underline font-medium"
               >
                 Sign in
               </NavLink>

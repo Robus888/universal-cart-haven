@@ -93,7 +93,12 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
 export const login = async (email: string, password: string): Promise<User | null> => {
   try {
     if (!email || !password) {
-      throw new Error("Please enter both email and password");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter both email and password",
+      });
+      return null;
     }
     
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -102,7 +107,22 @@ export const login = async (email: string, password: string): Promise<User | nul
     });
     
     if (error) {
-      throw error;
+      // Handle specific error messages for better UX
+      if (error.message.includes("Invalid login")) {
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Invalid email or password. Please check your credentials and try again.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login Error",
+          description: error.message || "An error occurred during login",
+        });
+      }
+      console.error("Login error:", error);
+      return null;
     }
     
     if (data && data.user) {
@@ -128,6 +148,13 @@ export const login = async (email: string, password: string): Promise<User | nul
         return userProfile;
       }
     }
+    
+    // If we got here without returning a profile, something went wrong
+    toast({
+      variant: "destructive",
+      title: "Login Error",
+      description: "Unable to retrieve your profile. Please try again.",
+    });
     return null;
   } catch (error) {
     let message = "Login failed";
@@ -141,7 +168,8 @@ export const login = async (email: string, password: string): Promise<User | nul
       description: message,
     });
     
-    throw error;
+    console.error("Login error:", error);
+    return null;
   }
 };
 
@@ -174,7 +202,12 @@ export const logout = async (): Promise<boolean> => {
 export const register = async (username: string, email: string, password: string): Promise<boolean> => {
   try {
     if (!username || !email || !password) {
-      throw new Error("Please fill in all fields");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in all fields",
+      });
+      return false;
     }
     
     const { data, error } = await supabase.auth.signUp({
@@ -188,7 +221,13 @@ export const register = async (username: string, email: string, password: string
     });
     
     if (error) {
-      throw error;
+      toast({
+        variant: "destructive",
+        title: "Registration Error",
+        description: error.message || "Failed to create account",
+      });
+      console.error("Registration error:", error);
+      return false;
     }
     
     if (data.user) {
@@ -199,7 +238,12 @@ export const register = async (username: string, email: string, password: string
       
       return true;
     } else {
-      throw new Error("Failed to create account. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Registration Error",
+        description: "Failed to create account. Please try again.",
+      });
+      return false;
     }
   } catch (error) {
     let message = "Registration failed";
@@ -213,6 +257,7 @@ export const register = async (username: string, email: string, password: string
       description: message,
     });
     
-    throw error;
+    console.error("Registration error:", error);
+    return false;
   }
 };

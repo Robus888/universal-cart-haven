@@ -19,7 +19,7 @@ const Login: React.FC = () => {
   return (
     <div 
       className="min-h-screen flex flex-col bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('https://4kwallpapers.com/images/wallpapers/anime-girl-dream-2880x1800-10024.jpg')" }}
+      style={{ backgroundImage: "url('https://wallpapercave.com/wp/wp7158601.jpg')" }}
     >
       <div className="absolute inset-0 bg-black bg-opacity-40" /> {/* Overlay to improve readability */}
       <motion.div

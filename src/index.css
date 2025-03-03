@@ -123,6 +123,19 @@
     @apply flex items-center space-x-2 px-3 py-2 rounded-md bg-shop-blue text-white hover:bg-shop-darkBlue transition-colors;
   }
 
+  /* Old-style transparent menu */
+  .old-menu {
+    @apply bg-black/50 backdrop-blur-sm border-white/10 text-white;
+  }
+
+  .old-menu-item {
+    @apply hover:bg-white/10 transition-colors duration-200;
+  }
+
+  .old-button {
+    @apply bg-black/60 backdrop-blur-sm border border-white/20 text-white hover:bg-white/10 transition-colors;
+  }
+
   /* === RAINBOW BORDER ANIMATION FOR VIDEO === */
   @keyframes rainbow-border {
     0% { border-color: red; }
@@ -140,4 +153,23 @@
     border-radius: 12px;
     animation: rainbow-border 6s infinite linear;
   }
+}
+
+/* Custom retro scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }

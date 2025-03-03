@@ -48,6 +48,7 @@ const LoginForm: React.FC = () => {
   
   const onSubmit = async (values: LoginFormValues) => {
     try {
+      console.log("Attempting login with:", values.email);
       await login(values.email, values.password);
       // Navigation is handled in the ShopContext after successful login
     } catch (error: any) {
@@ -78,7 +79,7 @@ const LoginForm: React.FC = () => {
   
   return (
     <motion.div 
-      className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mx-auto"
+      className="bg-black/80 backdrop-blur-xl p-8 rounded-lg shadow-lg max-w-md w-full mx-auto border border-white/10"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -91,8 +92,8 @@ const LoginForm: React.FC = () => {
             className="h-16 w-16 object-cover" 
           />
         </div>
-        <h1 className="text-2xl font-bold">Welcome back</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
+        <h1 className="text-2xl font-bold text-white">Welcome back</h1>
+        <p className="text-gray-400 mt-1">Sign in to your account</p>
       </div>
       
       <Form {...form}>
@@ -102,12 +103,13 @@ const LoginForm: React.FC = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-white">Email</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter your email"
                     type="email"
                     autoComplete="email"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -122,10 +124,10 @@ const LoginForm: React.FC = () => {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="text-white">Password</FormLabel>
                   <NavLink
                     to="/forgot-password"
-                    className="text-xs text-shop-blue hover:underline"
+                    className="text-xs text-blue-400 hover:underline"
                   >
                     Forgot password?
                   </NavLink>
@@ -135,6 +137,7 @@ const LoginForm: React.FC = () => {
                     placeholder="Enter your password"
                     type="password"
                     autoComplete="current-password"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
                     {...field}
                   />
                 </FormControl>
@@ -152,11 +155,11 @@ const LoginForm: React.FC = () => {
           </Button>
           
           <div className="text-center mt-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-400">
               Don't have an account?{" "}
               <NavLink
                 to="/register"
-                className="text-shop-blue hover:underline font-medium"
+                className="text-blue-400 hover:underline font-medium"
               >
                 Sign up
               </NavLink>

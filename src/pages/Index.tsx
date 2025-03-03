@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { useShop } from "@/contexts/ShopContext";
 import { Button } from "@/components/ui/button";
@@ -12,14 +13,14 @@ const colorVariants: Variants = {
     transition: {
       duration: 5,
       repeat: Infinity,
-      repeatType: "loop"
+      repeatType: "loop" as const
     }
   }
 };
 
 const Index: React.FC = () => {
   const { products, isAuthenticated, user } = useShop();
-  const featuredProducts = products.slice(0, 4);
+  const featuredProducts = products.slice(0, 4); // Get first 4 products as featured
 
   // Video control states
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -41,6 +42,17 @@ const Index: React.FC = () => {
       setIsPaused(!isPaused);
     }
   };
+
+  // Get a random selection of products to display as "most popular"
+  const getPopularProducts = () => {
+    // In a real app, you would fetch this data from the backend based on actual purchase data
+    // For now, we'll just shuffle the products array and take the first 4
+    return [...products]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 4);
+  };
+
+  const popularProducts = getPopularProducts();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -119,12 +131,27 @@ const Index: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">Add Funds</Button>
-              <Button className="bg-shop-blue hover:bg-shop-darkBlue" size="sm">View History</Button>
+              <Button variant="outline" size="sm" onClick={() => window.open("https://t.me/yowxios", "_blank")}>Add Funds</Button>
+              <Button className="bg-shop-blue hover:bg-shop-darkBlue" size="sm" onClick={() => window.location.href = "/wallet"}>View History</Button>
             </div>
           </div>
         </motion.section>
       )}
+
+      {/* Popular Products Section */}
+      <section className="mb-12">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-2xl font-bold">Most Popular Products</h2>
+            <p className="text-gray-600 dark:text-gray-300">Our best-selling gaming enhancers</p>
+          </div>
+          <NavLink to="/shop" className="text-shop-blue hover:underline font-medium flex items-center">
+            View All
+            <ChevronRight className="ml-1 h-4 w-4" />
+          </NavLink>
+        </div>
+        <ProductGrid products={popularProducts} />
+      </section>
 
       {/* Featured Products Section */}
       <section className="mb-12">
