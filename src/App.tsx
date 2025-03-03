@@ -1,41 +1,40 @@
-
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import MainLayout from "@/components/layout/MainLayout";
-import Index from "@/pages/Index";
-import Shop from "@/pages/Shop";
-import ProductDetail from "@/pages/ProductDetail";
-import Cart from "@/pages/Cart";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import NotFound from "@/pages/NotFound";
-import Wallet from "@/pages/Wallet";
-import Downloads from "@/pages/Downloads";
-import Settings from "@/pages/Settings";
-import { ThemeProvider } from "@/hooks/useTheme";
-import { ShopProvider } from "@/contexts/ShopContext";
-import { Toaster } from "@/components/ui/toaster";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Index from '@/pages/Index';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import Shop from '@/pages/Shop';
+import Cart from '@/pages/Cart';
+import ProductDetail from '@/pages/ProductDetail';
+import Wallet from '@/pages/Wallet';
+import Downloads from '@/pages/Downloads';
+import Settings from '@/pages/Settings';
+import NotFound from '@/pages/NotFound';
+import { Toaster } from "@/components/ui/toaster"
+import PaymentMethod from "@/pages/PaymentMethod";
+import Profile from "@/pages/Profile";
+import PopularProducts from "@/pages/PopularProducts";
 
 function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <ShopProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={<MainLayout><Index /></MainLayout>} />
-            <Route path="/shop" element={<MainLayout><Shop /></MainLayout>} />
-            <Route path="/shop/:productId" element={<MainLayout><ProductDetail /></MainLayout>} />
-            <Route path="/cart" element={<MainLayout><Cart /></MainLayout>} />
-            <Route path="/wallet" element={<MainLayout><Wallet /></MainLayout>} />
-            <Route path="/downloads" element={<MainLayout><Downloads /></MainLayout>} />
-            <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
-            <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
-          </Routes>
-          <Toaster />
-        </ShopProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <div className="app">
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route path="/downloads" element={<Downloads />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/payment-method" element={<PaymentMethod />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/popular-products" element={<PopularProducts />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster />
+    </div>
   );
 }
 

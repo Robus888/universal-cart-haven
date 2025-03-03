@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { CreditCard, RefreshCcw, ShoppingBag, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import PaymentMethodsDropdown from "@/components/payment/PaymentMethodsDropdown";
@@ -20,7 +19,8 @@ type PurchaseHistory = {
 const Wallet: React.FC = () => {
   const { user, isAuthenticated, currency } = useShop();
   const [purchases, setPurchases] = useState<PurchaseHistory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,32 +29,23 @@ const Wallet: React.FC = () => {
       return;
     }
 
-    const fetchPurchases = async () => {
-      if (!user) return;
-      
-      try {
-        setIsLoading(true);
-        const { data, error } = await supabase
-          .from("purchases")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-        
-        if (error) {
-          console.error("Error fetching purchases:", error);
-          return;
-        }
-        
-        setPurchases(data || []);
-      } catch (error) {
-        console.error("Error in fetchPurchases:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Only load once when component mounts
+    if (!hasAttemptedLoad) {
+      fetchPurchases();
+    }
+  }, [isAuthenticated, navigate, hasAttemptedLoad]);
 
-    fetchPurchases();
-  }, [user, isAuthenticated, navigate]);
+  const fetchPurchases = async () => {
+    setIsLoading(true);
+    setHasAttemptedLoad(true);
+    
+    // Simulate loading for 1 second to show the loading state
+    setTimeout(() => {
+      // Just set empty array since we don't have real data in the demo
+      setPurchases([]);
+      setIsLoading(false);
+    }, 1000);
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -74,8 +65,8 @@ const Wallet: React.FC = () => {
     });
   };
 
-  const handleRecharge = () => {
-    window.open("https://t.me/yowxios", "_blank");
+  const handleRefresh = () => {
+    fetchPurchases();
   };
 
   return (
@@ -97,7 +88,10 @@ const Wallet: React.FC = () => {
               <div className="text-4xl font-bold">{user ? formatCurrency(user.balance) : formatCurrency(0)}</div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleRecharge} className="w-full bg-shop-blue hover:bg-shop-darkBlue">
+              <Button 
+                onClick={() => window.open("https://t.me/yowxios", "_blank")}
+                className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+              >
                 <CreditCard className="mr-2 h-4 w-4" />
                 Add Funds
               </Button>
@@ -118,7 +112,7 @@ const Wallet: React.FC = () => {
                   <CardTitle>Purchase History</CardTitle>
                   <CardDescription>Your recent transactions</CardDescription>
                 </div>
-                <Button variant="outline" size="icon" onClick={() => navigate(0)}>
+                <Button variant="outline" size="icon" onClick={handleRefresh}>
                   <RefreshCcw className="h-4 w-4" />
                 </Button>
               </div>
@@ -167,23 +161,7 @@ const Wallet: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
-        >
-          <Card className="bg-black/80 backdrop-blur-md border-white/20 text-white">
-            <CardHeader>
-              <CardTitle>Payment Options</CardTitle>
-              <CardDescription className="text-gray-300">Choose your preferred payment method</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PaymentMethodsDropdown />
-            </CardContent>
-          </Card>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
-          className="md:col-span-2"
+          className="md:col-span-3"
         >
           <Card className="bg-black/80 backdrop-blur-md border-white/20 text-white h-full">
             <CardHeader>

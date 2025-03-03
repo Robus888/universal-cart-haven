@@ -43,13 +43,9 @@ const Index: React.FC = () => {
     }
   };
 
-  // Get a random selection of products to display as "most popular"
+  // Get only the Premium Game Key product to display as "most popular"
   const getPopularProducts = () => {
-    // In a real app, you would fetch this data from the backend based on actual purchase data
-    // For now, we'll just shuffle the products array and take the first 4
-    return [...products]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 4);
+    return products.filter(product => product.id === "3");
   };
 
   const popularProducts = getPopularProducts();
@@ -142,8 +138,8 @@ const Index: React.FC = () => {
       <section className="mb-12">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-2xl font-bold">Most Popular Products</h2>
-            <p className="text-gray-600 dark:text-gray-300">Our best-selling gaming enhancers</p>
+            <h2 className="text-2xl font-bold">Most Popular Product</h2>
+            <p className="text-gray-600 dark:text-gray-300">Our best-selling gaming enhancer</p>
           </div>
           <NavLink to="/shop" className="text-shop-blue hover:underline font-medium flex items-center">
             View All

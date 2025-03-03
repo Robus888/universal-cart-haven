@@ -43,7 +43,11 @@ const paymentMethods: PaymentMethod[] = [
   },
 ];
 
-const PaymentMethodsDropdown: React.FC = () => {
+interface PaymentMethodsDropdownProps {
+  fullPage?: boolean;
+}
+
+const PaymentMethodsDropdown: React.FC<PaymentMethodsDropdownProps> = ({ fullPage = false }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {
@@ -55,6 +59,35 @@ const PaymentMethodsDropdown: React.FC = () => {
     // You can add additional logic here to handle the payment method selection
     window.open("https://t.me/yowxios", "_blank");
   };
+
+  if (fullPage) {
+    return (
+      <div className="grid gap-6">
+        <h2 className="text-2xl font-bold">Payment Methods</h2>
+        <div className="grid gap-4">
+          {paymentMethods.map((method) => (
+            <Button 
+              key={method.id} 
+              onClick={() => handlePaymentMethodSelect(method)}
+              variant="outline" 
+              className="w-full justify-start bg-transparent backdrop-blur-sm hover:bg-white/10 text-white border-white/20 py-6"
+            >
+              <span className="mr-4">{method.icon}</span>
+              {method.name}
+            </Button>
+          ))}
+        </div>
+        
+        <Button 
+          onClick={() => window.open("https://t.me/yowxios", "_blank")}
+          className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold py-6"
+        >
+          <DollarSign className="mr-2 h-5 w-5" />
+          Buy Coins Now
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col space-y-2">
