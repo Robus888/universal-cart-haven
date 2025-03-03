@@ -22,16 +22,14 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/shop/:productId" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/wallet" element={<Wallet />} />
-            <Route path="/downloads" element={<Downloads />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
+          <Route path="/" element={<MainLayout><Index /></MainLayout>} />
+          <Route path="/shop" element={<MainLayout><Shop /></MainLayout>} />
+          <Route path="/shop/:productId" element={<MainLayout><ProductDetail /></MainLayout>} />
+          <Route path="/cart" element={<MainLayout><Cart /></MainLayout>} />
+          <Route path="/wallet" element={<MainLayout><Wallet /></MainLayout>} />
+          <Route path="/downloads" element={<MainLayout><Downloads /></MainLayout>} />
+          <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
+          <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
         </Routes>
         <Toaster />
       </ShopProvider>

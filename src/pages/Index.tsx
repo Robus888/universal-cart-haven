@@ -1,11 +1,11 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { useShop } from "@/contexts/ShopContext";
-import MainLayout from "@/components/layout/MainLayout";
-import ProductGrid from "@/components/shop/ProductGrid";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ShoppingBag, ChevronRight, PauseCircle, PlayCircle } from "lucide-react";
+import ProductGrid from "@/components/shop/ProductGrid";
 
 const colorVariants = {
   animate: {
@@ -13,7 +13,7 @@ const colorVariants = {
     transition: {
       duration: 5,
       repeat: Infinity,
-      repeatType: "loop"
+      repeatType: "loop" as const
     }
   }
 };
@@ -44,7 +44,7 @@ const Index: React.FC = () => {
   };
 
   return (
-    <MainLayout>
+    <div>
       <section className="py-10 mb-12">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <motion.div
@@ -137,7 +137,7 @@ const Index: React.FC = () => {
         </div>
         <ProductGrid products={featuredProducts} />
       </section>
-    </MainLayout>
+    </div>
   );
 };
 

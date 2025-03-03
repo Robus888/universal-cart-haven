@@ -65,7 +65,16 @@ const AnnouncementManager: React.FC = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setActiveAnnouncements(data || []);
+      
+      // Map data to Announcement type with correct audience type
+      const typedAnnouncements: Announcement[] = (data || []).map(item => ({
+        ...item,
+        audience: (item.audience === "all" || item.audience === "specific") 
+          ? item.audience as AnnouncementAudience 
+          : "all"
+      }));
+      
+      setActiveAnnouncements(typedAnnouncements);
     } catch (error) {
       console.error("Error fetching active announcements:", error);
       toast({
