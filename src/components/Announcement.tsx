@@ -14,8 +14,15 @@ const Announcement: React.FC = () => {
   const { toast } = useToast();
   const { user } = useShop();
 
+  // Check for announcements every 5 minutes
   useEffect(() => {
     fetchAnnouncements();
+    
+    const interval = setInterval(() => {
+      fetchAnnouncements();
+    }, 5 * 60 * 1000); // Check every 5 minutes
+    
+    return () => clearInterval(interval);
   }, [user]);
 
   const fetchAnnouncements = async () => {
@@ -40,11 +47,19 @@ const Announcement: React.FC = () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Check if the announcement was dismissed before
-        const dismissedAnnouncements = JSON.parse(localStorage.getItem("dismissedAnnouncements") || "[]");
-        if (!dismissedAnnouncements.includes(data[0].id)) {
+        // Check if the announcement was recently viewed
+        const viewedAnnouncements = JSON.parse(sessionStorage.getItem("viewedAnnouncements") || "[]");
+        
+        // Format with timestamp to ensure it only shows once in this session
+        const announcementId = `${data[0].id}_${new Date().toDateString()}`;
+        
+        if (!viewedAnnouncements.includes(announcementId)) {
           setAnnouncement(data[0] as AnnouncementType);
           setOpen(true);
+          
+          // Add to viewed announcements for this session
+          viewedAnnouncements.push(announcementId);
+          sessionStorage.setItem("viewedAnnouncements", JSON.stringify(viewedAnnouncements));
         }
       }
     } catch (error) {

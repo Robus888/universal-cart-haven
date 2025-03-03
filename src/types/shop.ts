@@ -70,4 +70,5 @@ export type ShopContextType = {
   getPurchasedProducts: () => string[];
   isProductPurchased: (productId: string) => boolean;
   isInCart: (productId: string) => boolean;
+  refreshUserData: () => Promise<void>;
 };

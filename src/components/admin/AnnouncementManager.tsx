@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,8 +14,9 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { AnnouncementAudience } from "@/types/shop";
-import { User } from "lucide-react";
+import { AnnouncementAudience, Announcement } from "@/types/shop";
+import { User, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const AnnouncementManager: React.FC = () => {
   const [title, setTitle] = useState("");
@@ -24,11 +25,15 @@ const AnnouncementManager: React.FC = () => {
   const [targetUser, setTargetUser] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [users, setUsers] = useState<{ id: string, username: string, email: string }[]>([]);
+  const [activeAnnouncements, setActiveAnnouncements] = useState<Announcement[]>([]);
+  const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<Record<string, boolean>>({});
   const { user } = useShop();
   const { toast } = useToast();
 
   useEffect(() => {
     fetchUsers();
+    fetchActiveAnnouncements();
   }, []);
 
   const fetchUsers = async () => {
@@ -42,6 +47,34 @@ const AnnouncementManager: React.FC = () => {
       setUsers(data || []);
     } catch (error) {
       console.error("Error fetching users:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load users",
+      });
+    }
+  };
+
+  const fetchActiveAnnouncements = async () => {
+    try {
+      setIsLoadingAnnouncements(true);
+      const { data, error } = await supabase
+        .from("announcements")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setActiveAnnouncements(data || []);
+    } catch (error) {
+      console.error("Error fetching active announcements:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load active announcements",
+      });
+    } finally {
+      setIsLoadingAnnouncements(false);
     }
   };
 
@@ -53,6 +86,16 @@ const AnnouncementManager: React.FC = () => {
         variant: "destructive",
         title: "Error",
         description: "Please fill in both title and message fields",
+      });
+      return;
+    }
+
+    // Check if there's already an active announcement
+    if (activeAnnouncements.length > 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please delete existing announcement before creating a new one",
       });
       return;
     }
@@ -83,6 +126,9 @@ const AnnouncementManager: React.FC = () => {
       setMessage("");
       setAudience("all");
       setTargetUser("");
+      
+      // Refresh active announcements
+      fetchActiveAnnouncements();
     } catch (error) {
       console.error("Error creating announcement:", error);
       toast({
@@ -95,6 +141,46 @@ const AnnouncementManager: React.FC = () => {
     }
   };
   
+  const handleDeleteAnnouncement = async (id: string) => {
+    try {
+      setIsDeleting(prev => ({ ...prev, [id]: true }));
+      
+      const { error } = await supabase
+        .from("announcements")
+        .update({ active: false })
+        .eq("id", id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Announcement deleted successfully",
+      });
+      
+      // Remove from local state
+      setActiveAnnouncements(prev => prev.filter(a => a.id !== id));
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete announcement",
+      });
+    } finally {
+      setIsDeleting(prev => ({ ...prev, [id]: false }));
+    }
+  };
+  
+  const refreshAnnouncements = () => {
+    fetchActiveAnnouncements();
+  };
+  
+  const getUsernameById = (userId: string | null | undefined) => {
+    if (!userId) return "All users";
+    const user = users.find(u => u.id === userId);
+    return user ? (user.username || user.email) : "Unknown user";
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -171,10 +257,85 @@ const AnnouncementManager: React.FC = () => {
             </div>
           )}
           
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Announcement"}
+          <Button type="submit" className="w-full" disabled={isSubmitting || activeAnnouncements.length > 0}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Announcement"
+            )}
           </Button>
+          
+          {activeAnnouncements.length > 0 && (
+            <p className="text-sm text-amber-600 dark:text-amber-400 text-center">
+              Please delete the existing announcement before creating a new one.
+            </p>
+          )}
         </form>
+      </CardContent>
+      
+      <Separator className="my-4" />
+      
+      <CardHeader className="pb-0">
+        <div className="flex justify-between items-center">
+          <CardTitle>Active Announcements</CardTitle>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={refreshAnnouncements}
+            disabled={isLoadingAnnouncements}
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoadingAnnouncements ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        {isLoadingAnnouncements ? (
+          <div className="flex justify-center items-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span className="ml-2">Loading announcements...</span>
+          </div>
+        ) : activeAnnouncements.length === 0 ? (
+          <p className="text-center py-4 text-gray-500">No active announcements</p>
+        ) : (
+          <div className="space-y-4">
+            {activeAnnouncements.map((announcement) => (
+              <div key={announcement.id} className="border rounded-md p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium">{announcement.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      For: {announcement.audience === "all" 
+                        ? "All users" 
+                        : `Specific user: ${getUsernameById(announcement.target_user_id)}`}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Created: {new Date(announcement.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleDeleteAnnouncement(announcement.id)}
+                    disabled={isDeleting[announcement.id]}
+                  >
+                    {isDeleting[announcement.id] ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="mt-2 text-sm whitespace-pre-wrap">
+                  {announcement.message}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

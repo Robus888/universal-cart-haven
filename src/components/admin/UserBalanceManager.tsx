@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, Loader2 } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -20,6 +20,7 @@ const UserBalanceManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
   // New balance amount to set
@@ -104,6 +105,9 @@ const UserBalanceManager: React.FC = () => {
         return;
       }
 
+      // Set updating state for this user
+      setIsUpdating(prev => ({ ...prev, [userId]: true }));
+
       // Update the balance in Supabase
       const { error, data } = await supabase
         .from("profiles")
@@ -142,6 +146,9 @@ const UserBalanceManager: React.FC = () => {
         title: "Error",
         description: "Failed to update balance",
       });
+    } finally {
+      // Reset updating state for this user
+      setIsUpdating(prev => ({ ...prev, [userId]: false }));
     }
   };
 
@@ -186,7 +193,10 @@ const UserBalanceManager: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-4">Loading users...</div>
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Loading users...</span>
+          </div>
         ) : filteredUsers.length === 0 ? (
           <div className="text-center py-4">No users found</div>
         ) : (
@@ -209,7 +219,12 @@ const UserBalanceManager: React.FC = () => {
                     className="w-32"
                     placeholder="0.00"
                   />
-                  <Button onClick={() => updateBalance(user.id)}>Update</Button>
+                  <Button 
+                    onClick={() => updateBalance(user.id)}
+                    disabled={isUpdating[user.id]}
+                  >
+                    {isUpdating[user.id] ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
+                  </Button>
                 </div>
               </div>
             ))}
