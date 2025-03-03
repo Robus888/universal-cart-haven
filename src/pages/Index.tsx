@@ -13,7 +13,7 @@ const colorVariants = {
     transition: {
       duration: 5,
       repeat: Infinity,
-      repeatType: "loop" as const
+      repeatType: "loop"
     }
   }
 };
@@ -44,7 +44,7 @@ const Index: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <section className="py-10 mb-12">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <motion.div
@@ -55,7 +55,11 @@ const Index: React.FC = () => {
             <h1 className="text-4xl font-bold leading-tight mb-4 text-center md:text-6xl">
               Welcome to the best hacks store
             </h1>
-            <motion.p className="mb-8 mx-[2px] text-xl" variants={colorVariants} animate="animate">
+            <motion.p 
+              className="mb-8 mx-[2px] text-xl" 
+              animate="animate"
+              variants={colorVariants as any}
+            >
               Join the dark side with the best mod menus on the market for your favorite antiban game
             </motion.p>
             <div className="flex flex-wrap gap-4">
@@ -80,13 +84,13 @@ const Index: React.FC = () => {
             <div className="rainbow-border p-2 rounded-xl">
               <video
                 ref={videoRef}
-                src="/videos/sample.mp4"  // Change this to your actual video file
+                src="/videos/sample.mp4"
                 width="100%"
                 height="500px"
                 className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
                 autoPlay
                 loop
-                controls
+                muted
               />
             </div>
             <Button

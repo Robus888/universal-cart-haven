@@ -1,10 +1,21 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+
+/* Reset some basic elements */
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+/* This allows scrolling content to be visible */
+#root {
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* Basic styling for logos and animated content */
 .logo {
   height: 6em;
   padding: 1.5em;
