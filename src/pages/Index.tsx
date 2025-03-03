@@ -1,13 +1,12 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { useShop } from "@/contexts/ShopContext";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { ShoppingBag, ChevronRight, PauseCircle, PlayCircle } from "lucide-react";
 import ProductGrid from "@/components/shop/ProductGrid";
 
-const colorVariants = {
+const colorVariants: Variants = {
   animate: {
     color: ["#017418", "#000000", "#df0000", "#000000"],
     transition: {
@@ -58,7 +57,7 @@ const Index: React.FC = () => {
             <motion.p 
               className="mb-8 mx-[2px] text-xl" 
               animate="animate"
-              variants={colorVariants as any}
+              variants={colorVariants}
             >
               Join the dark side with the best mod menus on the market for your favorite antiban game
             </motion.p>

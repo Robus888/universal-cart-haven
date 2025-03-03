@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import Index from "@/pages/Index";
 import Shop from "@/pages/Shop";
@@ -17,23 +17,25 @@ import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   return (
-    <ThemeProvider>
-      <ShopProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={<MainLayout><Index /></MainLayout>} />
-          <Route path="/shop" element={<MainLayout><Shop /></MainLayout>} />
-          <Route path="/shop/:productId" element={<MainLayout><ProductDetail /></MainLayout>} />
-          <Route path="/cart" element={<MainLayout><Cart /></MainLayout>} />
-          <Route path="/wallet" element={<MainLayout><Wallet /></MainLayout>} />
-          <Route path="/downloads" element={<MainLayout><Downloads /></MainLayout>} />
-          <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
-          <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
-        </Routes>
-        <Toaster />
-      </ShopProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <ShopProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/" element={<MainLayout><Index /></MainLayout>} />
+            <Route path="/shop" element={<MainLayout><Shop /></MainLayout>} />
+            <Route path="/shop/:productId" element={<MainLayout><ProductDetail /></MainLayout>} />
+            <Route path="/cart" element={<MainLayout><Cart /></MainLayout>} />
+            <Route path="/wallet" element={<MainLayout><Wallet /></MainLayout>} />
+            <Route path="/downloads" element={<MainLayout><Downloads /></MainLayout>} />
+            <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
+            <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
+          </Routes>
+          <Toaster />
+        </ShopProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
