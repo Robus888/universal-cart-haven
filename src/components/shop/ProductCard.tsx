@@ -4,11 +4,14 @@ import { useShop } from "@/contexts/ShopContext";
 import type { Product } from "@/types/shop";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Eye, Download } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; 
+import { ShoppingCart, Eye, Download, Clock, Calendar } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ExternalLink } from "lucide-react";
+
+type SubscriptionPeriod = "weekly" | "monthly";
 
 interface ProductCardProps {
   product: Product;
@@ -24,8 +27,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   } = useShop();
 
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [subscriptionPeriod, setSubscriptionPeriod] = useState<SubscriptionPeriod>("weekly");
+  
   const isPurchased = isProductPurchased(product.id);
   const isItemInCart = isInCart(product.id);
+  
+  // Prices for weekly and monthly subscriptions
+  const subscriptionPrices: Record<string, { weekly: number, monthly: number }> = {
+    "1": { weekly: 5.00, monthly: 20.00 },  // Pro Gaming Headset
+    "2": { weekly: 5.00, monthly: 20.00 },  // Gaming Software Pro
+    "3": { weekly: 4.50, monthly: 17.00 },  // Premium Game Key
+  };
+  
+  const prices = subscriptionPrices[product.id] || { weekly: 5.00, monthly: 20.00 };
   
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -38,7 +52,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    
+    const productWithSubscription = {
+      ...product,
+      price: prices[subscriptionPeriod],
+      subscriptionPeriod
+    };
+    
+    addToCart(productWithSubscription);
   };
   
   const handleViewDetails = (e: React.MouseEvent) => {
@@ -110,22 +131,44 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="p-4">
           <h3 className="text-lg font-semibold truncate">{product.name}</h3>
           
-          <div className="mt-2 flex items-center space-x-2">
-            {product.discountedPrice ? (
-              <>
-                <span className="text-lg font-bold text-shop-blue">
-                  {formatPrice(product.discountedPrice)}
-                </span>
-                <span className="text-sm text-gray-500 line-through">
-                  {formatPrice(product.price)}
-                </span>
-              </>
-            ) : (
-              <span className="text-lg font-bold text-shop-blue">
-                {formatPrice(product.price)}
-              </span>
-            )}
-          </div>
+          {!isPurchased && (
+            <div className="mt-3">
+              <Tabs 
+                defaultValue="weekly" 
+                onValueChange={(value) => setSubscriptionPeriod(value as SubscriptionPeriod)}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-2 h-8">
+                  <TabsTrigger value="weekly" className="text-xs h-8 p-0">
+                    <Clock className="mr-1 h-3 w-3" />
+                    Weekly
+                  </TabsTrigger>
+                  <TabsTrigger value="monthly" className="text-xs h-8 p-0">
+                    <Calendar className="mr-1 h-3 w-3" />
+                    Monthly
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="weekly" className="pt-2 pb-0">
+                  <div className="text-center">
+                    <span className="text-lg font-bold text-shop-blue">
+                      {formatPrice(prices.weekly)}
+                    </span>
+                    <span className="text-xs block text-gray-500">7 days access</span>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="monthly" className="pt-2 pb-0">
+                  <div className="text-center">
+                    <span className="text-lg font-bold text-shop-blue">
+                      {formatPrice(prices.monthly)}
+                    </span>
+                    <span className="text-xs block text-gray-500">30 days access</span>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
           
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
             {product.description}
@@ -147,7 +190,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 disabled={product.stock === 0 || isItemInCart}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                {isItemInCart ? "Already in Cart" : "Add to Cart"}
+                {isItemInCart ? "In Cart" : "Add to Cart"}
               </Button>
             )}
             

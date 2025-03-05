@@ -1,91 +1,40 @@
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useShop } from "@/contexts/ShopContext";
 import MainLayout from "@/components/layout/MainLayout";
+import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Calendar, Mail } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 
 const Profile: React.FC = () => {
-  const { user, isAuthenticated } = useShop();
-  const navigate = useNavigate();
-  const [joinDays, setJoinDays] = useState(0);
-  const [joinDate, setJoinDate] = useState("");
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
-    if (user) {
-      // Calculate days since joined
-      const created = user.created_at ? new Date(user.created_at) : new Date();
-      const now = new Date();
-      const diffTime = Math.abs(now.getTime() - created.getTime());
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      setJoinDays(diffDays);
-
-      // Format join date
-      setJoinDate(created.toLocaleDateString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric'
-      }) + ' - ' + created.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }));
-    }
-  }, [user, isAuthenticated, navigate]);
-
-  if (!user) {
-    return (
-      <MainLayout>
-        <div className="container mx-auto py-8">
-          <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-shop-blue"></div>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
+  const { user } = useShop();
+  
+  // Create a formatted join date
+  const joinDate = new Date();
+  const daysJoined = 0;
+  const formattedDate = format(joinDate, "MM/dd/yyyy - HH:mm:ss");
 
   return (
     <MainLayout>
       <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-6">Profile</h1>
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-2xl">Profile Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <Mail className="h-5 w-5 text-gray-500" />
-                <div>
-                  <p className="font-medium">Email</p>
-                  <p className="text-gray-600">{user.email || "diadiejd5@gmail.com"}</p>
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <CardContent className="pt-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 rounded-full bg-shop-blue flex items-center justify-center text-white text-2xl">
+                  {user?.username.charAt(0).toUpperCase()}
                 </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <Clock className="h-5 w-5 text-gray-500" />
                 <div>
-                  <p className="font-medium">Account Age</p>
-                  <p className="text-gray-600">JOINED: {joinDays} DAYS</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <Calendar className="h-5 w-5 text-gray-500" />
-                <div>
-                  <p className="font-medium">Join Date</p>
-                  <p className="text-gray-600">{joinDate || "03/02/2025 - 20:49:54"}</p>
+                  <h2 className="text-xl font-bold">{user?.username}</h2>
+                  <p className="text-gray-500">{user?.email || "diadiejd5@gmail.com"}</p>
+                  <p className="text-gray-500 mt-2">JOINED: {daysJoined} DAYS</p>
+                  <p className="text-gray-500">{formattedDate}</p>
                 </div>
               </div>
             </CardContent>

@@ -1,13 +1,17 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useShop } from "@/contexts/ShopContext";
 import MainLayout from "@/components/layout/MainLayout";
+import ProductSubscription from "@/components/shop/ProductSubscription";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import { ShoppingCart, ArrowLeft, Share, Heart, Check, AlertCircle, Truck, ExternalLink, Eye, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+
+type SubscriptionPeriod = "weekly" | "monthly";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +26,10 @@ const ProductDetail: React.FC = () => {
     isProductPurchased,
     isInCart
   } = useShop();
-  const [showDownloadDialog, setShowDownloadDialog] = React.useState(false);
+  
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+  const [subscriptionPeriod, setSubscriptionPeriod] = useState<SubscriptionPeriod>("weekly");
+  const [subscriptionPrice, setSubscriptionPrice] = useState<number>(5.00);
   
   const product = products.find((p) => p.id === id);
   
@@ -53,11 +60,30 @@ const ProductDetail: React.FC = () => {
   };
 
   const handlePurchase = async () => {
-    await purchaseProduct(product);
+    const productWithSubscription = {
+      ...product,
+      price: subscriptionPrice,
+      subscriptionPeriod
+    };
+    await purchaseProduct(productWithSubscription);
+  };
+
+  const handleAddToCart = () => {
+    const productWithSubscription = {
+      ...product,
+      price: subscriptionPrice,
+      subscriptionPeriod
+    };
+    addToCart(productWithSubscription);
   };
 
   const handleViewDetails = () => {
     viewProductDetails(product.id);
+  };
+
+  const handleSubscriptionChange = (period: SubscriptionPeriod, price: number) => {
+    setSubscriptionPeriod(period);
+    setSubscriptionPrice(price);
   };
 
   const getDownloadLinks = () => {
@@ -128,24 +154,23 @@ const ProductDetail: React.FC = () => {
               </div>
             </div>
             
+            {/* Subscription Period Selector */}
+            {!isPurchased && (
+              <ProductSubscription 
+                productId={product.id} 
+                onPeriodChange={handleSubscriptionChange}
+              />
+            )}
+            
             <div className="mb-6">
-              {product.discountedPrice ? (
-                <div className="flex items-center space-x-3">
-                  <span className="text-3xl font-bold text-shop-blue">
-                    {formatPrice(product.discountedPrice)}
-                  </span>
-                  <span className="text-xl text-gray-500 line-through">
-                    {formatPrice(product.price)}
-                  </span>
-                  <span className="bg-red-100 text-red-800 text-sm font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-200">
-                    Save {Math.round((1 - product.discountedPrice / product.price) * 100)}%
-                  </span>
-                </div>
-              ) : (
+              <div className="flex items-center space-x-3">
                 <span className="text-3xl font-bold text-shop-blue">
-                  {formatPrice(product.price)}
+                  {formatPrice(subscriptionPrice)}
                 </span>
-              )}
+                <span className="bg-shop-blue/10 text-shop-blue text-sm font-medium px-2.5 py-0.5 rounded">
+                  {subscriptionPeriod === "weekly" ? "Weekly" : "Monthly"} Plan
+                </span>
+              </div>
             </div>
             
             {user && (
@@ -204,15 +229,15 @@ const ProductDetail: React.FC = () => {
                 <>
                   <Button 
                     onClick={handlePurchase} 
-                    disabled={product.stock === 0 || !user || user.balance < (product.discountedPrice || product.price)}
+                    disabled={product.stock === 0 || !user || user.balance < subscriptionPrice}
                     className="w-full bg-shop-blue hover:bg-shop-darkBlue"
                   >
                     <ShoppingCart className="mr-2 h-5 w-5" />
-                    Buy Now {user && user.balance < (product.discountedPrice || product.price) && "(Insufficient Balance)"}
+                    Buy Now {user && user.balance < subscriptionPrice && "(Insufficient Balance)"}
                   </Button>
                   
                   <Button 
-                    onClick={() => addToCart(product)} 
+                    onClick={handleAddToCart} 
                     disabled={product.stock === 0 || isItemInCart}
                     variant="outline"
                     className="w-full"
@@ -227,6 +252,10 @@ const ProductDetail: React.FC = () => {
             <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
               <Truck className="h-4 w-4 mr-1" />
               <span>Digital delivery - instant access after purchase</span>
+            </div>
+            
+            <div className="mt-2 text-xs text-red-500">
+              * {subscriptionPeriod === "weekly" ? "Weekly" : "Monthly"} plans expire after {subscriptionPeriod === "weekly" ? "7" : "30"} days. You will need to renew your subscription to maintain access.
             </div>
           </div>
         </motion.div>
@@ -273,9 +302,9 @@ const ProductDetail: React.FC = () => {
           <TabsContent value="faq">
             <div className="space-y-4">
               <div>
-                <h3 className="text-md font-semibold mb-1">How does delivery work?</h3>
+                <h3 className="text-md font-semibold mb-1">How does the subscription work?</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  This is a digital product that will be delivered instantly to your account after purchase.
+                  You can choose between weekly (7 days) or monthly (30 days) access. After this period, your access will expire and you'll need to purchase again.
                 </p>
               </div>
               <Separator />
@@ -287,9 +316,9 @@ const ProductDetail: React.FC = () => {
               </div>
               <Separator />
               <div>
-                <h3 className="text-md font-semibold mb-1">How long will I have access to this product?</h3>
+                <h3 className="text-md font-semibold mb-1">Will I receive updates during my subscription?</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Once purchased, you'll have lifetime access to the product and all future updates.
+                  Yes, you'll have access to all updates released during your subscription period.
                 </p>
               </div>
             </div>

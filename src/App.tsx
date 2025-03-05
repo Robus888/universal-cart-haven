@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
@@ -14,10 +15,16 @@ import { Toaster } from "@/components/ui/toaster"
 import PaymentMethod from "@/pages/PaymentMethod";
 import Profile from "@/pages/Profile";
 import PopularProducts from "@/pages/PopularProducts";
+import FreeCoins from "@/pages/FreeCoins";
+import Promocodes from "@/pages/Promocodes";
+import OnlineUsers from "@/components/OnlineUsers";
+import TapAnimation from "@/components/TapAnimation";
 
 function App() {
   return (
     <div className="app">
+      <OnlineUsers />
+      <TapAnimation />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
@@ -31,6 +38,8 @@ function App() {
         <Route path="/payment-method" element={<PaymentMethod />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/popular-products" element={<PopularProducts />} />
+        <Route path="/free-coins" element={<FreeCoins />} />
+        <Route path="/promocodes" element={<Promocodes />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
