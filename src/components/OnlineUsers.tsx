@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 
 const OnlineUsers: React.FC = () => {
   const [onlineCount, setOnlineCount] = useState<number>(0);
