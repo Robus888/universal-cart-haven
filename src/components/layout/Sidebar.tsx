@@ -65,7 +65,7 @@ const Sidebar: React.FC = () => {
 
         <div className="space-y-6 flex-1">
           <div className="space-y-1">
-            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-inherit">
+            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-950">
               Main Menu
             </p>
             <nav className="space-y-1">
