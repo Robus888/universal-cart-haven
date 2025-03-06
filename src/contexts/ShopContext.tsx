@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,11 +35,6 @@ import { useTheme } from "@/hooks/useTheme";
 // Re-export the Product type for components to use
 export type { Product } from "@/types/shop";
 
-// Extend the ShopContextType to include refreshUserData
-interface ExtendedShopContextType extends ShopContextType {
-  refreshUserData: () => Promise<void>;
-}
-
 export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [products] = useState<Product[]>(sampleProducts);
@@ -69,14 +65,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [purchasedProducts]);
 
   // Function to refresh user data from Supabase
-  const refreshUserData = async () => {
+  const refreshUserData = async (userId: string) => {
     try {
-      if (user) {
-        const profile = await fetchUserProfile(user.id);
-        if (profile) {
-          setUser(profile);
-          localStorage.setItem("user", JSON.stringify(profile));
-        }
+      const profile = await fetchUserProfile(userId);
+      if (profile) {
+        setUser(profile);
+        localStorage.setItem("user", JSON.stringify(profile));
       }
     } catch (error) {
       console.error("Error refreshing user data:", error);
@@ -93,7 +87,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const { data: userData } = await supabase.auth.getUser();
           
           if (userData?.user) {
-            await refreshUserData();
+            await refreshUserData(userData.user.id);
           }
         }
         
@@ -112,7 +106,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Auth state changed:", event, session);
         
         if (event === "SIGNED_IN" && session) {
-          await refreshUserData();
+          await refreshUserData(session.user.id);
           
           // If user is on login page, redirect to home
           if (window.location.pathname === "/login" || window.location.pathname === "/register") {
@@ -133,7 +127,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up interval to periodically refresh user data (every 30 seconds)
     const refreshInterval = setInterval(() => {
       if (user) {
-        refreshUserData();
+        refreshUserData(user.id);
       }
     }, 30000);
     
@@ -152,7 +146,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Also refresh from database to ensure we have the most up-to-date info
       if (parsedUser.id) {
-        refreshUserData();
+        refreshUserData(parsedUser.id);
       }
     }
   }, [user]);
@@ -241,7 +235,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         (updatedUser) => {
           setUser(updatedUser);
-          refreshUserData(); // Also refresh from DB
+          refreshUserData(updatedUser.id); // Also refresh from DB
         }
       );
       
@@ -270,7 +264,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user, 
         (updatedUser) => {
           setUser(updatedUser);
-          refreshUserData(); // Also refresh from DB
+          refreshUserData(updatedUser.id); // Also refresh from DB
         }
       );
       
@@ -325,7 +319,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setFilteredProducts(filtered);
   };
 
-  const contextValue: ExtendedShopContextType = {
+  const contextValue: ShopContextType = {
     user,
     products,
     filteredProducts,
@@ -356,7 +350,6 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getPurchasedProducts,
     isProductPurchased,
     isInCart,
-    refreshUserData,
   };
 
   return (
@@ -366,7 +359,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-const ShopContext = createContext<ExtendedShopContextType | undefined>(undefined);
+const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export const useShop = () => {
   const context = useContext(ShopContext);

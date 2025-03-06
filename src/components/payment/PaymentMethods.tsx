@@ -1,72 +1,109 @@
 
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CreditCard, DollarSign, ExternalLink, Wallet } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { useShop } from "@/contexts/ShopContext";
+import type { Product } from "@/types/shop";
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
-const PaymentMethods: React.FC = () => {
-  const handleOpenPaymentPage = () => {
-    window.open("https://t.me/yowxios", "_blank");
+interface PaymentMethodsProps {
+  product: Product;
+  onComplete?: () => void;
+}
+
+const PaymentMethods: React.FC<PaymentMethodsProps> = ({ product, onComplete }) => {
+  const { user, purchaseProduct } = useShop();
+  const navigate = useNavigate();
+
+  const handlePurchaseWithWallet = async () => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Sign up required",
+        description: "Please sign up or log in to purchase this product",
+      });
+      navigate("/login");
+      return;
+    }
+
+    const price = product.discountedPrice || product.price;
     
-    toast({
-      title: "Redirecting to payment",
-      description: "You are being redirected to the payment page.",
-    });
+    if (user.balance < price) {
+      toast({
+        variant: "destructive",
+        title: "Insufficient balance",
+        description: (
+          <div>
+            <p>You don't have enough coins to purchase this product.</p>
+            <a 
+              href="https://t.me/yowxios" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-500 font-semibold hover:underline"
+            >
+              Buy coins now
+            </a>
+          </div>
+        ),
+      });
+      return;
+    }
+
+    const success = await purchaseProduct(product);
+    if (success && onComplete) {
+      onComplete();
+    }
+  };
+
+  const openTelegramPayment = () => {
+    window.open("https://t.me/yowxios", "_blank");
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Payment Methods</CardTitle>
-        <CardDescription>Choose your preferred payment method</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border rounded-lg p-4 hover:border-primary transition-colors">
-              <div className="flex items-center space-x-3">
-                <CreditCard className="h-6 w-6" />
-                <h3 className="font-medium">Credit Card</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">Visa, Mastercard, Amex accepted</p>
-            </div>
-            
-            <div className="border rounded-lg p-4 hover:border-primary transition-colors">
-              <div className="flex items-center space-x-3">
-                <Wallet className="h-6 w-6" />
-                <h3 className="font-medium">PayPal</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">Fast and secure payments</p>
-            </div>
-            
-            <div className="border rounded-lg p-4 hover:border-primary transition-colors">
-              <div className="flex items-center space-x-3">
-                <DollarSign className="h-6 w-6" />
-                <h3 className="font-medium">Cash App</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">Quick money transfers</p>
-            </div>
-            
-            <div className="border rounded-lg p-4 hover:border-primary transition-colors">
-              <div className="flex items-center space-x-3">
-                <DollarSign className="h-6 w-6" />
-                <h3 className="font-medium">Zelle</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">Bank-to-bank transfers</p>
-            </div>
-          </div>
-          
-          <Button 
-            className="w-full" 
-            onClick={handleOpenPaymentPage}
-          >
-            Buy Coins Now
-            <ExternalLink className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6 py-4">
+      <div>
+        <h3 className="font-medium text-lg mb-2">Pay with wallet balance</h3>
+        <Button 
+          className="w-full bg-shop-blue hover:bg-shop-darkBlue"
+          onClick={handlePurchaseWithWallet}
+        >
+          Use Wallet ({user ? `$${user.balance.toFixed(2)}` : "$0.00"})
+        </Button>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <h3 className="font-medium text-lg">Other payment methods</h3>
+        
+        <Button 
+          variant="outline" 
+          className="w-full flex justify-between items-center"
+          onClick={openTelegramPayment}
+        >
+          <span>PayPal</span>
+          <img src="https://cdn.iconscout.com/icon/free/png-256/free-paypal-26-283426.png" alt="PayPal" className="h-6 w-6" />
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="w-full flex justify-between items-center"
+          onClick={openTelegramPayment}
+        >
+          <span>Zelle</span>
+          <img src="https://1000logos.net/wp-content/uploads/2021/05/Zelle-logo.png" alt="Zelle" className="h-6 w-auto" />
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="w-full"
+          onClick={openTelegramPayment}
+        >
+          Your own payment method
+        </Button>
+      </div>
+    </div>
   );
 };
 

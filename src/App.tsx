@@ -1,50 +1,47 @@
 
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Index from '@/pages/Index';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import Shop from '@/pages/Shop';
-import Cart from '@/pages/Cart';
-import ProductDetail from '@/pages/ProductDetail';
-import Wallet from '@/pages/Wallet';
-import Downloads from '@/pages/Downloads';
-import Settings from '@/pages/Settings';
-import NotFound from '@/pages/NotFound';
-import { Toaster } from "@/components/ui/toaster"
-import PaymentMethod from "@/pages/PaymentMethod";
-import Profile from "@/pages/Profile";
-import PopularProducts from "@/pages/PopularProducts";
-import FreeCoins from "@/pages/FreeCoins";
-import Promocodes from "@/pages/Promocodes";
-import OnlineUsers from "@/components/OnlineUsers";
-import TapAnimation from "@/components/TapAnimation";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ShopProvider } from "./contexts/ShopContext";
+import { ThemeProvider } from "./hooks/useTheme";
+import { Toaster } from "./components/ui/toaster";
+import Index from "./pages/Index";
+import Shop from "./pages/Shop";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Cart from "./pages/Cart";
+import ProductDetail from "./pages/ProductDetail";
+import NotFound from "./pages/NotFound";
+import Wallet from "./pages/Wallet";
+import Downloads from "./pages/Downloads";
+import AdminPanel from "./components/admin/AdminPanel";
+import OwnerPanel from "./components/admin/OwnerPanel";
+import Announcement from "./components/Announcement";
+import "./App.css";
 
-function App() {
+export default function App() {
   return (
-    <div className="app">
-      <OnlineUsers />
-      <TapAnimation />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/product/:id" element={<ProductDetail />} />
-        <Route path="/wallet" element={<Wallet />} />
-        <Route path="/downloads" element={<Downloads />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/payment-method" element={<PaymentMethod />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/popular-products" element={<PopularProducts />} />
-        <Route path="/free-coins" element={<FreeCoins />} />
-        <Route path="/promocodes" element={<Promocodes />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Toaster />
-    </div>
+    <>
+      <BrowserRouter>
+        <ThemeProvider>
+          <ShopProvider>
+            <Toaster />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/wallet" element={<Wallet />} />
+              <Route path="/downloads" element={<Downloads />} />
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/owner" element={<OwnerPanel />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Announcement />
+          </ShopProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </>
   );
 }
-
-export default App;

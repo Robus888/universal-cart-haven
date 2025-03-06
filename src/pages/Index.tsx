@@ -1,26 +1,26 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { useShop } from "@/contexts/ShopContext";
+import MainLayout from "@/components/layout/MainLayout";
+import ProductGrid from "@/components/shop/ProductGrid";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { ShoppingBag, ChevronRight, PauseCircle, PlayCircle } from "lucide-react";
-import ProductGrid from "@/components/shop/ProductGrid";
 
-const colorVariants: Variants = {
+const colorVariants = {
   animate: {
     color: ["#017418", "#000000", "#df0000", "#000000"],
     transition: {
       duration: 5,
       repeat: Infinity,
-      repeatType: "loop" as const
+      repeatType: "loop"
     }
   }
 };
 
 const Index: React.FC = () => {
   const { products, isAuthenticated, user } = useShop();
-  const featuredProducts = products.slice(0, 4); // Get first 4 products as featured
+  const featuredProducts = products.slice(0, 4);
 
   // Video control states
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -43,15 +43,8 @@ const Index: React.FC = () => {
     }
   };
 
-  // Get only the Premium Game Key product to display as "most popular"
-  const getPopularProducts = () => {
-    return products.filter(product => product.id === "3");
-  };
-
-  const popularProducts = getPopularProducts();
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <MainLayout>
       <section className="py-10 mb-12">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <motion.div
@@ -62,11 +55,7 @@ const Index: React.FC = () => {
             <h1 className="text-4xl font-bold leading-tight mb-4 text-center md:text-6xl">
               Welcome to the best hacks store
             </h1>
-            <motion.p 
-              className="mb-8 mx-[2px] text-xl" 
-              animate="animate"
-              variants={colorVariants}
-            >
+            <motion.p className="mb-8 mx-[2px] text-xl" variants={colorVariants} animate="animate">
               Join the dark side with the best mod menus on the market for your favorite antiban game
             </motion.p>
             <div className="flex flex-wrap gap-4">
@@ -91,13 +80,13 @@ const Index: React.FC = () => {
             <div className="rainbow-border p-2 rounded-xl">
               <video
                 ref={videoRef}
-                src="/videos/sample.mp4"
+                src="/videos/sample.mp4"  // Change this to your actual video file
                 width="100%"
                 height="500px"
                 className="rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
                 autoPlay
                 loop
-                muted
+                controls
               />
             </div>
             <Button
@@ -127,27 +116,12 @@ const Index: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => window.open("https://t.me/yowxios", "_blank")}>Add Funds</Button>
-              <Button className="bg-shop-blue hover:bg-shop-darkBlue" size="sm" onClick={() => window.location.href = "/wallet"}>View History</Button>
+              <Button variant="outline" size="sm">Add Funds</Button>
+              <Button className="bg-shop-blue hover:bg-shop-darkBlue" size="sm">View History</Button>
             </div>
           </div>
         </motion.section>
       )}
-
-      {/* Popular Products Section */}
-      <section className="mb-12">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-2xl font-bold">Most Popular Product</h2>
-            <p className="text-gray-600 dark:text-gray-300">Our best-selling gaming enhancer</p>
-          </div>
-          <NavLink to="/shop" className="text-shop-blue hover:underline font-medium flex items-center">
-            View All
-            <ChevronRight className="ml-1 h-4 w-4" />
-          </NavLink>
-        </div>
-        <ProductGrid products={popularProducts} />
-      </section>
 
       {/* Featured Products Section */}
       <section className="mb-12">
@@ -163,7 +137,7 @@ const Index: React.FC = () => {
         </div>
         <ProductGrid products={featuredProducts} />
       </section>
-    </div>
+    </MainLayout>
   );
 };
 

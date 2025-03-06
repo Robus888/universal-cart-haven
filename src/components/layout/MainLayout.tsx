@@ -11,7 +11,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const { sidebarOpen, toggleSidebar } = useShop();
+  const { sidebarOpen } = useShop();
   
   // Close sidebar on clicks outside when on mobile
   useEffect(() => {
@@ -25,39 +25,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           !target.closest("[data-sidebar-trigger='true']")) {
         // If click is outside sidebar and not on the trigger
         // And we're on mobile, close the sidebar
-        toggleSidebar();
       }
     };
     
-    if (sidebarOpen && window.innerWidth < 1024) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [sidebarOpen, toggleSidebar]);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div 
-        id="sidebar-container" 
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-800 transition-transform duration-300 ease-in-out",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          "lg:relative lg:z-0"
-        )}
-      >
+      <div id="sidebar-container">
         <Sidebar />
       </div>
-      
-      {/* Overlay for mobile when sidebar is open */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
-          onClick={toggleSidebar}
-        />
-      )}
       
       <div className={cn(
         "flex-1 transition-all duration-300 ease-in-out",
