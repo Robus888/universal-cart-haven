@@ -34,7 +34,7 @@ const Sidebar: React.FC = () => {
     }
   };
   return <div className={cn("fixed inset-y-0 left-0 z-50 w-64 bg-shop-blue/10 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-64", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
-      <div className="flex flex-col h-full p-4">
+      <div className="flex flex-col h-full p-4 bg-sky-500">
         <div className="flex items-center justify-between mb-8">
           <NavLink to="/" className="flex items-center space-x-2" onClick={handleCloseSidebar}>
             <div className="h-10 w-10 rounded-full bg-shop-blue flex items-center justify-center">
