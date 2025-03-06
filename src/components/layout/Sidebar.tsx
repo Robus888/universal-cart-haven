@@ -78,7 +78,7 @@ const Sidebar: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-950">
+            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-50">
               Payments
             </p>
             <nav className="space-y-1">
