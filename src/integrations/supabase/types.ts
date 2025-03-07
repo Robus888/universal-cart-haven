@@ -62,6 +62,7 @@ export type Database = {
           id: string
           is_admin: boolean | null
           is_owner: boolean | null
+          last_username_change: string | null
           updated_at: string | null
           username: string | null
         }
@@ -73,6 +74,7 @@ export type Database = {
           id: string
           is_admin?: boolean | null
           is_owner?: boolean | null
+          last_username_change?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -84,10 +86,76 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           is_owner?: boolean | null
+          last_username_change?: string | null
           updated_at?: string | null
           username?: string | null
         }
         Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          active: boolean
+          amount: number
+          code: string
+          created_at: string
+          created_by: string
+          current_redemptions: number
+          id: string
+          max_redemptions: number
+        }
+        Insert: {
+          active?: boolean
+          amount: number
+          code: string
+          created_at?: string
+          created_by: string
+          current_redemptions?: number
+          id?: string
+          max_redemptions?: number
+        }
+        Update: {
+          active?: boolean
+          amount?: number
+          code?: string
+          created_at?: string
+          created_by?: string
+          current_redemptions?: number
+          id?: string
+          max_redemptions?: number
+        }
+        Relationships: []
+      }
+      promo_redemptions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          promo_code_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          promo_code_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          promo_code_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_redemptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchases: {
         Row: {

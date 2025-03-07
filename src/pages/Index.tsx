@@ -1,3 +1,4 @@
+
 import React from "react";
 import { motion } from "framer-motion";
 import { useShop } from "@/contexts/ShopContext";
@@ -10,7 +11,7 @@ const textVariants = {
     transition: {
       duration: 2,
       repeat: Infinity,
-      repeatType: "loop"
+      repeatType: "loop" as const
     }
   }
 };

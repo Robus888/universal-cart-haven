@@ -23,7 +23,7 @@ const App = () => {
   return (
     <div className="app-container min-h-screen flex flex-col">
       <Routes>
-        <Route element={<MainLayout />}>
+        <Route path="/" element={<MainLayout />}>
           <Route index element={<Index />} />
           <Route path="shop" element={<Shop />} />
           <Route path="shop/:productId" element={<ProductDetail />} />
