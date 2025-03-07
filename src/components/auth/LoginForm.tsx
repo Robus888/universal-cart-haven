@@ -19,14 +19,14 @@ import { motion } from "framer-motion";
 import { toast } from "@/components/ui/use-toast";
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  usernameOrEmail: z.string().min(3, { message: "Please enter a valid username or email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const LoginForm: React.FC = () => {
-  const { login, isAuthenticated } = useShop();
+  const { login, isAuthenticated, getTranslation } = useShop();
   const navigate = useNavigate();
   
   // Redirect if already authenticated
@@ -39,7 +39,7 @@ const LoginForm: React.FC = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      usernameOrEmail: "",
       password: "",
     },
   });
@@ -48,21 +48,21 @@ const LoginForm: React.FC = () => {
   
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await login(values.email, values.password);
+      await login(values.usernameOrEmail, values.password);
       // Navigation is handled in the ShopContext after successful login
     } catch (error: any) {
       console.error("Login failed:", error);
       
       // Set form errors based on the error message
-      if (error.message?.includes("Invalid login credentials")) {
+      if (error.message?.includes("Invalid login credentials") || error.message?.includes("Username not found")) {
         toast({
           variant: "destructive",
           title: "Login failed",
-          description: "Invalid email or password. Please try again.",
+          description: "Invalid username/email or password. Please try again.",
         });
         
-        setError("email", { message: "Invalid email or password" });
-        setError("password", { message: "Invalid email or password" });
+        setError("usernameOrEmail", { message: "Invalid username/email or password" });
+        setError("password", { message: "Invalid username/email or password" });
       } else {
         toast({
           variant: "destructive",
@@ -72,7 +72,7 @@ const LoginForm: React.FC = () => {
       }
       
       // Reset the submitting state to enable the button again
-      form.reset({ email: values.email, password: "" });
+      form.reset({ usernameOrEmail: values.usernameOrEmail, password: "" });
     }
   };
   
@@ -91,23 +91,22 @@ const LoginForm: React.FC = () => {
             className="h-16 w-16 object-cover" 
           />
         </div>
-        <h1 className="text-2xl font-bold">Welcome back</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Sign in to your account</p>
+        <h1 className="text-2xl font-bold">{getTranslation("welcomeBack")}</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">{getTranslation("signInToAccount")}</p>
       </div>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="email"
+            name="usernameOrEmail"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{getTranslation("username")}/{getTranslation("email")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter your email"
-                    type="email"
-                    autoComplete="email"
+                    placeholder={`${getTranslation("enterUsername")} / ${getTranslation("enterEmail")}`}
+                    autoComplete="username"
                     {...field}
                   />
                 </FormControl>
@@ -122,17 +121,17 @@ const LoginForm: React.FC = () => {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{getTranslation("password")}</FormLabel>
                   <NavLink
                     to="/forgot-password"
                     className="text-xs text-shop-blue hover:underline"
                   >
-                    Forgot password?
+                    {getTranslation("forgotPassword")}
                   </NavLink>
                 </div>
                 <FormControl>
                   <Input
-                    placeholder="Enter your password"
+                    placeholder={getTranslation("enterPassword")}
                     type="password"
                     autoComplete="current-password"
                     {...field}
@@ -148,17 +147,17 @@ const LoginForm: React.FC = () => {
             className="w-full bg-red-600 hover:bg-red-700"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Signing in..." : "Sign in"}
+            {isSubmitting ? getTranslation("signingIn") : getTranslation("signIn")}
           </Button>
           
           <div className="text-center mt-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Don't have an account?{" "}
+              {getTranslation("dontHaveAccount")}{" "}
               <NavLink
                 to="/register"
                 className="text-shop-blue hover:underline font-medium"
               >
-                Sign up
+                {getTranslation("signUp")}
               </NavLink>
             </p>
           </div>

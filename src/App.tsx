@@ -1,47 +1,63 @@
 
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ShopProvider } from "./contexts/ShopContext";
-import { ThemeProvider } from "./hooks/useTheme";
-import { Toaster } from "./components/ui/toaster";
-import Index from "./pages/Index";
-import Shop from "./pages/Shop";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Cart from "./pages/Cart";
-import ProductDetail from "./pages/ProductDetail";
-import NotFound from "./pages/NotFound";
-import Wallet from "./pages/Wallet";
-import Downloads from "./pages/Downloads";
-import AdminPanel from "./components/admin/AdminPanel";
-import OwnerPanel from "./components/admin/OwnerPanel";
-import Announcement from "./components/Announcement";
-import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "@/components/layout/MainLayout";
+import Index from "@/pages/Index";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Shop from "@/pages/Shop";
+import ProductDetail from "@/pages/ProductDetail";
+import Cart from "@/pages/Cart";
+import Wallet from "@/pages/Wallet";
+import Downloads from "@/pages/Downloads";
+import NotFound from "@/pages/NotFound";
+import AdminPanel from "@/components/admin/AdminPanel";
+import Profile from "@/pages/Profile";
+import Settings from "@/pages/Settings";
+import PromoCodes from "@/pages/PromoCodes";
+import { useShop } from "@/contexts/ShopContext";
 
-export default function App() {
+const App = () => {
+  const { isAuthenticated, user } = useShop();
+  
   return (
-    <>
-      <BrowserRouter>
-        <ThemeProvider>
-          <ShopProvider>
-            <Toaster />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/wallet" element={<Wallet />} />
-              <Route path="/downloads" element={<Downloads />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/owner" element={<OwnerPanel />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Announcement />
-          </ShopProvider>
-        </ThemeProvider>
-      </BrowserRouter>
-    </>
+    <div className="app-container min-h-screen flex flex-col">
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<Index />} />
+          <Route path="shop" element={<Shop />} />
+          <Route path="shop/:productId" element={<ProductDetail />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="promocodes" element={<PromoCodes />} />
+          
+          {/* Protected routes - only accessible when authenticated */}
+          {isAuthenticated && (
+            <>
+              <Route path="wallet" element={<Wallet />} />
+              <Route path="downloads" element={<Downloads />} />
+              
+              {/* Admin/Owner routes */}
+              {user?.is_admin && (
+                <Route path="admin" element={<AdminPanel />} />
+              )}
+            </>
+          )}
+          
+          {/* Auth routes - not accessible when authenticated */}
+          {!isAuthenticated && (
+            <>
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+            </>
+          )}
+          
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </div>
   );
-}
+};
+
+export default App;

@@ -1,6 +1,6 @@
 
 export type Currency = "USD" | "EUR" | "GBP";
-export type Language = "English" | "Spanish" | "French";
+export type Language = "English" | "Spanish";
 
 export type User = {
   id: string;
@@ -10,6 +10,7 @@ export type User = {
   is_admin?: boolean;
   is_owner?: boolean;
   banned?: boolean;
+  last_username_change?: string | null;
 };
 
 export type Product = {
@@ -39,6 +40,17 @@ export type Announcement = {
   updated_at?: string | null;
 };
 
+export type PromoCode = {
+  id: string;
+  code: string;
+  amount: number;
+  max_redemptions: number;
+  current_redemptions: number;
+  active: boolean;
+  created_at: string;
+  created_by: string;
+};
+
 export type ShopContextType = {
   user: User | null;
   products: Product[];
@@ -50,7 +62,7 @@ export type ShopContextType = {
   isDarkMode: boolean;
   sidebarOpen: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (usernameOrEmail: string, password: string) => Promise<void>;
   logout: () => void;
   register: (username: string, email: string, password: string) => Promise<void>;
   addToCart: (product: Product) => void;
@@ -70,4 +82,8 @@ export type ShopContextType = {
   getPurchasedProducts: () => string[];
   isProductPurchased: (productId: string) => boolean;
   isInCart: (productId: string) => boolean;
+  changeUsername: (newUsername: string) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  redeemPromoCode: (code: string) => Promise<boolean>;
+  getTranslation: (key: string) => string;
 };

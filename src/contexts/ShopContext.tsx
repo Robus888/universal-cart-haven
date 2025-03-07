@@ -17,7 +17,10 @@ import {
   login, 
   logout, 
   register, 
-  fetchUserProfile 
+  fetchUserProfile,
+  changeUsername as changeUserUsername,
+  changePassword as changeUserPassword,
+  redeemPromoCode as redeemUserPromoCode
 } from "@/services/authService";
 import { 
   calculateCartTotal, 
@@ -30,7 +33,8 @@ import {
   getDownloadLink, 
   viewProductDetails 
 } from "@/services/productService";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme as useNextTheme } from "next-themes";
+import { translations } from "@/i18n/translations";
 
 // Re-export the Product type for components to use
 export type { Product } from "@/types/shop";
@@ -46,8 +50,17 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [purchasedProducts, setPurchasedProducts] = useState<string[]>([]);
   const [authChecked, setAuthChecked] = useState(false);
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { theme, setTheme } = useNextTheme();
+  const isDarkMode = theme === "dark";
   const navigate = useNavigate();
+
+  // Load language preference from localStorage
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem("language");
+    if (savedLanguage && (savedLanguage === "English" || savedLanguage === "Spanish")) {
+      setLanguageState(savedLanguage);
+    }
+  }, []);
 
   // Load purchased products from localStorage
   useEffect(() => {
@@ -153,9 +166,9 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAuthenticated = !!user;
 
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (usernameOrEmail: string, password: string) => {
     try {
-      const userProfile = await login(email, password);
+      const userProfile = await login(usernameOrEmail, password);
       if (userProfile) {
         setUser(userProfile);
         navigate("/");
@@ -298,9 +311,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const setLanguage = (newLanguage: Language) => {
     setLanguageState(newLanguage);
+    localStorage.setItem("language", newLanguage);
     toast({
-      title: "Language updated",
-      description: `Language has been changed to ${newLanguage}`,
+      title: getTranslation("languageUpdated"),
+      description: getTranslation("languageChangedTo").replace("{language}", newLanguage),
     });
   };
 
@@ -314,9 +328,70 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSidebarOpen((prev) => !prev);
   };
 
+  const toggleTheme = () => {
+    setTheme(isDarkMode ? "light" : "dark");
+  };
+
   const filterProducts = (category?: string) => {
     const filtered = filterProductsByCategory(products, category);
     setFilteredProducts(filtered);
+  };
+
+  const handleChangeUsername = async (newUsername: string): Promise<boolean> => {
+    if (!user) {
+      navigate("/login");
+      return false;
+    }
+    
+    try {
+      const success = await changeUserUsername(user.id, newUsername);
+      if (success) {
+        // Update the local user state
+        setUser(prev => prev ? {...prev, username: newUsername} : null);
+        // Also refresh from database to ensure we have the most up-to-date info
+        refreshUserData(user.id);
+      }
+      return success;
+    } catch (error) {
+      console.error("Change username error:", error);
+      return false;
+    }
+  };
+
+  const handleChangePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      return await changeUserPassword(currentPassword, newPassword);
+    } catch (error) {
+      console.error("Change password error:", error);
+      return false;
+    }
+  };
+
+  const handleRedeemPromoCode = async (code: string): Promise<boolean> => {
+    if (!user) {
+      navigate("/login");
+      return false;
+    }
+    
+    try {
+      const success = await redeemUserPromoCode(user.id, code);
+      if (success) {
+        // Refresh user data to get updated balance
+        refreshUserData(user.id);
+      }
+      return success;
+    } catch (error) {
+      console.error("Redeem promo code error:", error);
+      return false;
+    }
+  };
+
+  const getTranslation = (key: string): string => {
+    if (!translations[language] || !translations[language][key]) {
+      // Fallback to English if translation is missing
+      return translations.English[key] || key;
+    }
+    return translations[language][key];
   };
 
   const contextValue: ShopContextType = {
@@ -350,6 +425,10 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getPurchasedProducts,
     isProductPurchased,
     isInCart,
+    changeUsername: handleChangeUsername,
+    changePassword: handleChangePassword,
+    redeemPromoCode: handleRedeemPromoCode,
+    getTranslation,
   };
 
   return (

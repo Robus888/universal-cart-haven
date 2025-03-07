@@ -1,14 +1,17 @@
+
 import React from "react";
 import { useShop } from "@/contexts/ShopContext";
 import { NavLink } from "react-router-dom";
-import { Home, ShoppingCart, Clock, Award, Download, CreditCard, Receipt, Wallet, X, User, Settings, LogOut } from "lucide-react";
+import { Home, ShoppingCart, Clock, Award, Download, CreditCard, Receipt, Wallet, X, User, Settings, LogOut, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
 type SidebarItemProps = {
   to: string;
   icon: React.ReactNode;
   label: string;
 };
+
 const SidebarItem: React.FC<SidebarItemProps> = ({
   to,
   icon,
@@ -19,6 +22,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     {icon}
     <span>{label}</span>
   </NavLink>;
+
 const Sidebar: React.FC = () => {
   const {
     sidebarOpen,
@@ -26,13 +30,16 @@ const Sidebar: React.FC = () => {
     isAuthenticated,
     user,
     logout,
-    currency
+    currency,
+    getTranslation
   } = useShop();
+
   const handleCloseSidebar = () => {
     if (window.innerWidth < 1024) {
       toggleSidebar();
     }
   };
+
   return <div className={cn("fixed inset-y-0 left-0 z-50 w-64 bg-shop-blue/10 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-64", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
       <div className="flex flex-col h-full p-4 bg-sky-500">
         <div className="flex items-center justify-between mb-8">
@@ -66,25 +73,26 @@ const Sidebar: React.FC = () => {
         <div className="space-y-6 flex-1">
           <div className="space-y-1">
             <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-950">
-              Main Menu
+              {getTranslation("home")}
             </p>
             <nav className="space-y-1">
-              <SidebarItem to="/" icon={<Home size={18} />} label="Home" />
-              <SidebarItem to="/shop" icon={<ShoppingCart size={18} />} label="Shop" />
-              <SidebarItem to="/history" icon={<Clock size={18} />} label="Order History" />
-              <SidebarItem to="/top-products" icon={<Award size={18} />} label="Top Products" />
-              <SidebarItem to="/downloads" icon={<Download size={18} />} label="Downloads" />
+              <SidebarItem to="/" icon={<Home size={18} />} label={getTranslation("home")} />
+              <SidebarItem to="/shop" icon={<ShoppingCart size={18} />} label={getTranslation("shop")} />
+              <SidebarItem to="/history" icon={<Clock size={18} />} label={getTranslation("orderHistory")} />
+              <SidebarItem to="/top-products" icon={<Award size={18} />} label={getTranslation("topProducts")} />
+              <SidebarItem to="/downloads" icon={<Download size={18} />} label={getTranslation("downloads")} />
             </nav>
           </div>
 
           <div className="space-y-1">
             <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-950">
-              Payments
+              {getTranslation("paymentMethods")}
             </p>
             <nav className="space-y-1">
-              <SidebarItem to="/payment-methods" icon={<CreditCard size={18} />} label="Payment Methods" />
-              <SidebarItem to="/invoices" icon={<Receipt size={18} />} label="Invoices" />
-              <SidebarItem to="/wallet" icon={<Wallet size={18} />} label="Wallet" />
+              <SidebarItem to="/payment-methods" icon={<CreditCard size={18} />} label={getTranslation("paymentMethods")} />
+              <SidebarItem to="/invoices" icon={<Receipt size={18} />} label={getTranslation("invoices")} />
+              <SidebarItem to="/wallet" icon={<Wallet size={18} />} label={getTranslation("wallet")} />
+              <SidebarItem to="/promocodes" icon={<Tag size={18} />} label={getTranslation("promocodes")} />
             </nav>
           </div>
         </div>
@@ -92,27 +100,28 @@ const Sidebar: React.FC = () => {
         <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
           {!isAuthenticated ? <div className="space-y-2">
               <NavLink to="/login" className="btn-primary w-full justify-center flex items-center" onClick={handleCloseSidebar}>
-                Login
+                {getTranslation("login")}
               </NavLink>
               <NavLink to="/register" className="btn-secondary w-full justify-center flex items-center" onClick={handleCloseSidebar}>
-                Register
+                {getTranslation("register")}
               </NavLink>
             </div> : <div className="space-y-1">
               <NavLink to="/profile" className="sidebar-item" onClick={handleCloseSidebar}>
                 <User size={18} />
-                <span>Profile</span>
+                <span>{getTranslation("profile")}</span>
               </NavLink>
               <NavLink to="/settings" className="sidebar-item" onClick={handleCloseSidebar}>
                 <Settings size={18} />
-                <span>Settings</span>
+                <span>{getTranslation("settings")}</span>
               </NavLink>
               <button className="sidebar-item w-full text-left text-red-500 hover:bg-red-500/10" onClick={logout}>
                 <LogOut size={18} />
-                <span>Logout</span>
+                <span>{getTranslation("logout")}</span>
               </button>
             </div>}
         </div>
       </div>
     </div>;
 };
+
 export default Sidebar;
