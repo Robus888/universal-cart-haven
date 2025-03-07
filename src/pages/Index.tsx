@@ -3,7 +3,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useShop } from "@/contexts/ShopContext";
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 
 const textVariants = {
   animate: {
@@ -34,14 +33,20 @@ const Index = () => {
           {getTranslation("tagline")}
         </p>
         
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+        <div className="video-container mb-10">
+          <video 
+            src="/videos/yowxpanel.mp4" 
+            className="w-full rounded-xl shadow-xl rainbow-border"
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+          />
+        </div>
+        
+        <div className="flex justify-center items-center">
           <Link to="/shop" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded shadow">
             {getTranslation("shopNow")}
-          </Link>
-          
-          <Link to="/promocodes" className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-8 rounded shadow flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            {getTranslation("redeemPromo")}
           </Link>
         </div>
       </section>
