@@ -1,29 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useShop } from "@/contexts/ShopContext";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Card,
   CardContent,
@@ -31,328 +7,486 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tag, Trash2, CheckCircle, XCircle } from "lucide-react";
-import { PromoCode } from "@/types/shop";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription, 
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Trash2, Plus, Pencil } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { PromoCode } from "@/types/shop";
 
-const promoCodeSchema = z.object({
-  code: z.string().min(3, {
-    message: "Promo code must be at least 3 characters long",
-  }).max(20, {
-    message: "Promo code must not exceed 20 characters",
-  }),
-  amount: z.coerce.number().min(1, {
-    message: "Amount must be at least 1",
-  }),
-  maxRedemptions: z.coerce.number().min(1, {
-    message: "Maximum redemptions must be at least 1",
-  }),
-});
-
-type PromoCodeFormValues = z.infer<typeof promoCodeSchema>;
-
-const PromoCodeManager: React.FC = () => {
-  const { user, getTranslation } = useShop();
-  const [isCreating, setIsCreating] = useState(false);
+const PromoCodeManager = () => {
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const form = useForm<PromoCodeFormValues>({
-    resolver: zodResolver(promoCodeSchema),
-    defaultValues: {
-      code: "",
-      amount: 10,
-      maxRedemptions: 10,
-    },
-  });
-
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
+  const [newCode, setNewCode] = useState("");
+  const [newAmount, setNewAmount] = useState(0);
+  const [newMaxRedemptions, setNewMaxRedemptions] = useState(0);
+  const [newActive, setNewActive] = useState(true);
+  
+  const [editingCode, setEditingCode] = useState<PromoCode | null>(null);
+  const [deletingCode, setDeletingCode] = useState<PromoCode | null>(null);
+  
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    fetchPromoCodes();
+  }, []);
+  
   const fetchPromoCodes = async () => {
     try {
       setIsLoading(true);
+      
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData?.user?.id) {
+        throw new Error("Not authorized");
+      }
+      
       const { data, error } = await supabase
         .from("promo_codes")
         .select("*")
         .order("created_at", { ascending: false });
-
+        
       if (error) {
         throw error;
       }
-
-      if (data) {
-        setPromoCodes(data as PromoCode[]);
-      }
+      
+      setPromoCodes(data as PromoCode[]);
     } catch (error) {
       console.error("Error fetching promo codes:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load promo codes",
+        description: "Failed to load promo codes"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchPromoCodes();
-  }, []);
-
-  const onSubmit = async (data: PromoCodeFormValues) => {
-    if (!user) return;
-    
-    setIsCreating(true);
+  
+  const handleCreatePromoCode = async () => {
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData?.user?.id) {
+        throw new Error("Not authorized");
+      }
+      
+      if (!newCode) {
+        throw new Error("Promo code cannot be empty");
+      }
+      
+      if (newAmount <= 0) {
+        throw new Error("Amount must be greater than 0");
+      }
+      
       // Check if code already exists
       const { data: existingCode, error: checkError } = await supabase
         .from("promo_codes")
         .select("id")
-        .eq("code", data.code)
+        .eq("code", newCode)
         .maybeSingle();
-
+        
       if (checkError) {
-        throw new Error("Error checking existing promo code");
+        throw checkError;
       }
-
+      
       if (existingCode) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "This promo code already exists",
-        });
-        return;
+        throw new Error("This promo code already exists");
       }
-
-      // Insert new promo code
+      
       const { error } = await supabase
         .from("promo_codes")
         .insert({
-          code: data.code,
-          amount: data.amount,
-          max_redemptions: data.maxRedemptions,
+          code: newCode,
+          amount: newAmount,
+          max_redemptions: newMaxRedemptions,
           current_redemptions: 0,
-          active: true,
-          created_by: user.id,
+          active: newActive,
+          created_by: userData.user.id
         });
-
+        
       if (error) {
         throw error;
       }
-
+      
       toast({
-        title: "Promo code created",
-        description: `Successfully created promo code: ${data.code}`,
+        title: "Success",
+        description: `Promo code "${newCode}" has been created`
       });
-
-      form.reset({
-        code: "",
-        amount: 10,
-        maxRedemptions: 10,
-      });
-
+      
+      // Reset form and close dialog
+      setNewCode("");
+      setNewAmount(0);
+      setNewMaxRedemptions(0);
+      setNewActive(true);
+      setCreateDialogOpen(false);
+      
       // Refresh the list
       fetchPromoCodes();
-    } catch (error: any) {
+    } catch (error) {
+      console.error("Error creating promo code:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to create promo code",
+        description: error instanceof Error ? error.message : "Failed to create promo code"
       });
-    } finally {
-      setIsCreating(false);
     }
   };
-
-  const togglePromoCodeStatus = async (id: string, currentStatus: boolean) => {
+  
+  const handleUpdatePromoCode = async () => {
     try {
+      if (!editingCode) return;
+      
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData?.user?.id) {
+        throw new Error("Not authorized");
+      }
+      
       const { error } = await supabase
         .from("promo_codes")
-        .update({ active: !currentStatus })
-        .eq("id", id);
-
+        .update({
+          active: editingCode.active,
+          max_redemptions: editingCode.max_redemptions,
+          amount: editingCode.amount
+        })
+        .eq("id", editingCode.id);
+        
       if (error) {
         throw error;
       }
-
+      
       toast({
-        title: "Status updated",
-        description: `Promo code status updated to ${!currentStatus ? "active" : "inactive"}`,
+        title: "Success",
+        description: `Promo code "${editingCode.code}" has been updated`
       });
-
-      // Update the local state
-      setPromoCodes(prevCodes => 
-        prevCodes.map(code => 
-          code.id === id ? {...code, active: !currentStatus} : code
-        )
-      );
-    } catch (error: any) {
+      
+      setEditingCode(null);
+      setEditDialogOpen(false);
+      
+      // Refresh the list
+      fetchPromoCodes();
+    } catch (error) {
+      console.error("Error updating promo code:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to update promo code status",
+        description: error instanceof Error ? error.message : "Failed to update promo code"
       });
     }
   };
-
-  const deletePromoCode = async (id: string) => {
+  
+  const handleDeletePromoCode = async () => {
     try {
+      if (!deletingCode) return;
+      
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData?.user?.id) {
+        throw new Error("Not authorized");
+      }
+      
       const { error } = await supabase
         .from("promo_codes")
         .delete()
-        .eq("id", id);
-
+        .eq("id", deletingCode.id);
+        
       if (error) {
         throw error;
       }
-
+      
       toast({
-        title: "Promo code deleted",
-        description: "Successfully deleted the promo code",
+        title: "Success",
+        description: `Promo code "${deletingCode.code}" has been deleted`
       });
-
-      // Update the local state
-      setPromoCodes(prevCodes => prevCodes.filter(code => code.id !== id));
-    } catch (error: any) {
+      
+      setDeletingCode(null);
+      setDeleteDialogOpen(false);
+      
+      // Refresh the list
+      fetchPromoCodes();
+    } catch (error) {
+      console.error("Error deleting promo code:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to delete promo code",
+        description: error instanceof Error ? error.message : "Failed to delete promo code"
       });
     }
   };
-
+  
   return (
-    <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Tag className="h-5 w-5" />
-            {getTranslation("createPromoCode")}
-          </CardTitle>
-          <CardDescription>
-            Create a new promo code for users to redeem
-          </CardDescription>
-        </CardHeader>
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Promo Codes</CardTitle>
+            <CardDescription>
+              Create and manage promotional codes for users
+            </CardDescription>
+          </div>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Code
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="text-center py-4">Loading promo codes...</div>
+        ) : promoCodes.length === 0 ? (
+          <div className="text-center py-4">No promo codes found</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Code</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Redemptions</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {promoCodes.map((promoCode) => (
+                <TableRow key={promoCode.id}>
+                  <TableCell className="font-medium">{promoCode.code}</TableCell>
+                  <TableCell>{promoCode.amount}</TableCell>
+                  <TableCell>
+                    {promoCode.current_redemptions} / 
+                    {promoCode.max_redemptions > 0 
+                      ? promoCode.max_redemptions 
+                      : "∞"}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`py-1 px-2 rounded text-xs ${
+                      promoCode.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                    }`}>
+                      {promoCode.active ? "Active" : "Inactive"}
+                    </span>
+                  </TableCell>
+                  <TableCell>{new Date(promoCode.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => {
+                        setEditingCode(promoCode);
+                        setEditDialogOpen(true);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => {
+                        setDeletingCode(promoCode);
+                        setDeleteDialogOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
         
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-3">
-                <FormField
-                  control={form.control}
-                  name="code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{getTranslation("code")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder="SUMMER2023" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="amount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{getTranslation("promoCodeAmount")}</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="maxRedemptions"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{getTranslation("maxRedemptions")}</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+        {/* Create Dialog */}
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Promo Code</DialogTitle>
+              <DialogDescription>
+                Add a new promotional code for users to redeem balance
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="code">Code</Label>
+                <Input
+                  id="code"
+                  placeholder="WELCOME2023"
+                  value={newCode}
+                  onChange={(e) => setNewCode(e.target.value.toUpperCase())}
                 />
               </div>
               
-              <Button 
-                type="submit" 
-                className="mt-2"
-                disabled={isCreating}
-              >
-                {isCreating ? "Creating..." : getTranslation("create")}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{getTranslation("promoCodeList")}</CardTitle>
-          <CardDescription>
-            Manage existing promo codes
-          </CardDescription>
-        </CardHeader>
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  value={newAmount}
+                  onChange={(e) => setNewAmount(Number(e.target.value))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="maxRedemptions">
+                  Max Redemptions (0 for unlimited)
+                </Label>
+                <Input
+                  id="maxRedemptions"
+                  type="number"
+                  value={newMaxRedemptions}
+                  onChange={(e) => setNewMaxRedemptions(Number(e.target.value))}
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="active"
+                  checked={newActive}
+                  onCheckedChange={setNewActive}
+                />
+                <Label htmlFor="active">Active</Label>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleCreatePromoCode}>Create</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <p>Loading promo codes...</p>
-            </div>
-          ) : promoCodes.length === 0 ? (
-            <div className="flex justify-center py-8">
-              <p className="text-muted-foreground">{getTranslation("noPromoCodes")}</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{getTranslation("code")}</TableHead>
-                    <TableHead>{getTranslation("promoCodeAmount")}</TableHead>
-                    <TableHead className="text-center">{getTranslation("redemptions")}</TableHead>
-                    <TableHead className="text-center">{getTranslation("active")}</TableHead>
-                    <TableHead className="text-right">{getTranslation("actions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {promoCodes.map((promoCode) => (
-                    <TableRow key={promoCode.id}>
-                      <TableCell className="font-medium">{promoCode.code}</TableCell>
-                      <TableCell>${promoCode.amount}</TableCell>
-                      <TableCell className="text-center">
-                        {promoCode.current_redemptions} / {promoCode.max_redemptions}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Switch
-                          checked={promoCode.active}
-                          onCheckedChange={() => togglePromoCodeStatus(promoCode.id, promoCode.active)}
-                        />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deletePromoCode(promoCode.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+        {/* Edit Dialog */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Promo Code</DialogTitle>
+              <DialogDescription>
+                Update the promo code details
+              </DialogDescription>
+            </DialogHeader>
+            
+            {editingCode && (
+              <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-code">Code</Label>
+                  <Input
+                    id="edit-code"
+                    value={editingCode.code}
+                    disabled
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-amount">Amount</Label>
+                  <Input
+                    id="edit-amount"
+                    type="number"
+                    value={editingCode.amount}
+                    onChange={(e) => setEditingCode({
+                      ...editingCode,
+                      amount: Number(e.target.value)
+                    })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-maxRedemptions">
+                    Max Redemptions (0 for unlimited)
+                  </Label>
+                  <Input
+                    id="edit-maxRedemptions"
+                    type="number"
+                    value={editingCode.max_redemptions}
+                    onChange={(e) => setEditingCode({
+                      ...editingCode,
+                      max_redemptions: Number(e.target.value)
+                    })}
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="edit-active"
+                    checked={editingCode.active}
+                    onCheckedChange={(checked) => setEditingCode({
+                      ...editingCode,
+                      active: checked
+                    })}
+                  />
+                  <Label htmlFor="edit-active">Active</Label>
+                </div>
+              </div>
+            )}
+            
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleUpdatePromoCode}>Update</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Delete Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Promo Code</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this promo code?
+                This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {deletingCode && (
+              <div className="py-4">
+                <p>
+                  You are about to delete the promo code:
+                  <span className="font-bold ml-1">{deletingCode.code}</span>
+                </p>
+              </div>
+            )}
+            
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button
+                variant="destructive"
+                onClick={handleDeletePromoCode}
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 };
 

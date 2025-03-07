@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@/types/shop";
+import { User, PromoCode } from "@/types/shop";
 import { toast } from "@/components/ui/use-toast";
 
 export const fetchUserProfile = async (userId: string): Promise<User | null> => {

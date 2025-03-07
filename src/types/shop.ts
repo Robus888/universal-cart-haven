@@ -51,6 +51,14 @@ export type PromoCode = {
   created_by: string;
 };
 
+export type PromoRedemption = {
+  id: string;
+  user_id: string;
+  promo_code_id: string;
+  amount: number;
+  created_at: string;
+};
+
 export type ShopContextType = {
   user: User | null;
   products: Product[];
