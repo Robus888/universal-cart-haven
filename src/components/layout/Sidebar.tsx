@@ -2,7 +2,7 @@
 import React from "react";
 import { useShop } from "@/contexts/ShopContext";
 import { NavLink } from "react-router-dom";
-import { Home, ShoppingCart, Clock, Award, Download, CreditCard, Receipt, Wallet, X, User, Settings, LogOut, Tag } from "lucide-react";
+import { Home, ShoppingCart, Clock, Award, Download, CreditCard, Wallet, X, User, Settings, LogOut, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +63,11 @@ const Sidebar: React.FC = () => {
               {user.username.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user.username}</p>
+              <p className="text-sm font-medium truncate">
+                {user.username}
+                {user.is_admin && <span className="ml-1 text-xs bg-red-500 text-white px-1 rounded">Admin</span>}
+                {user.is_owner && <span className="ml-1 text-xs bg-purple-500 text-white px-1 rounded">Owner</span>}
+              </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                 Balance: {currency} {user.balance.toFixed(2)}
               </p>
@@ -79,8 +83,9 @@ const Sidebar: React.FC = () => {
               <SidebarItem to="/" icon={<Home size={18} />} label={getTranslation("home")} />
               <SidebarItem to="/shop" icon={<ShoppingCart size={18} />} label={getTranslation("shop")} />
               <SidebarItem to="/history" icon={<Clock size={18} />} label={getTranslation("orderHistory")} />
-              <SidebarItem to="/top-products" icon={<Award size={18} />} label={getTranslation("topProducts")} />
-              <SidebarItem to="/downloads" icon={<Download size={18} />} label={getTranslation("downloads")} />
+              {isAuthenticated && (
+                <SidebarItem to="/downloads" icon={<Download size={18} />} label={getTranslation("downloads")} />
+              )}
             </nav>
           </div>
 
@@ -90,7 +95,6 @@ const Sidebar: React.FC = () => {
             </p>
             <nav className="space-y-1">
               <SidebarItem to="/payment-methods" icon={<CreditCard size={18} />} label={getTranslation("paymentMethods")} />
-              <SidebarItem to="/invoices" icon={<Receipt size={18} />} label={getTranslation("invoices")} />
               <SidebarItem to="/wallet" icon={<Wallet size={18} />} label={getTranslation("wallet")} />
               <SidebarItem to="/promocodes" icon={<Tag size={18} />} label={getTranslation("promocodes")} />
             </nav>

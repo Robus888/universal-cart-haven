@@ -15,6 +15,8 @@ import AdminPanel from "@/components/admin/AdminPanel";
 import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import PromoCodes from "@/pages/PromoCodes";
+import PaymentMethods from "@/pages/PaymentMethods";
+import OrderHistory from "@/pages/OrderHistory";
 import { useShop } from "@/contexts/ShopContext";
 
 const App = () => {
@@ -31,6 +33,8 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<Settings />} />
           <Route path="promocodes" element={<PromoCodes />} />
+          <Route path="payment-methods" element={<PaymentMethods />} />
+          <Route path="history" element={<OrderHistory />} />
           
           {/* Protected routes - only accessible when authenticated */}
           {isAuthenticated && (

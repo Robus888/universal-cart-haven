@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import { useShop } from "@/contexts/ShopContext";
-import MainLayout from "@/components/layout/MainLayout";
 import ProductGrid from "@/components/shop/ProductGrid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +32,7 @@ const Shop: React.FC = () => {
   };
   
   return (
-    <MainLayout>
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Game Shop</h1>
         <p className="text-gray-600 dark:text-gray-300">
@@ -139,7 +138,7 @@ const Shop: React.FC = () => {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </div>
   );
 };
 

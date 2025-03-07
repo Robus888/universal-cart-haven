@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useShop } from "@/contexts/ShopContext";
-import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -79,104 +78,102 @@ const Wallet: React.FC = () => {
   };
 
   return (
-    <MainLayout>
-      <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-6">My Wallet</h1>
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">My Wallet</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card className="h-full bg-shop-blue/5 border-shop-blue/20">
+            <CardHeader>
+              <CardTitle className="text-shop-blue">Balance</CardTitle>
+              <CardDescription>Your current account balance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold">{user ? formatCurrency(user.balance) : formatCurrency(0)}</div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleRecharge} className="w-full bg-shop-blue hover:bg-shop-darkBlue">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Add Funds
+              </Button>
+            </CardFooter>
+          </Card>
+        </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card className="h-full bg-shop-blue/5 border-shop-blue/20">
-              <CardHeader>
-                <CardTitle className="text-shop-blue">Balance</CardTitle>
-                <CardDescription>Your current account balance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-4xl font-bold">{user ? formatCurrency(user.balance) : formatCurrency(0)}</div>
-              </CardContent>
-              <CardFooter>
-                <Button onClick={handleRecharge} className="w-full bg-shop-blue hover:bg-shop-darkBlue">
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Add Funds
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="md:col-span-2"
-          >
-            <Card className="h-full">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Purchase History</CardTitle>
-                    <CardDescription>Your recent transactions</CardDescription>
-                  </div>
-                  <Button variant="outline" size="icon" onClick={() => navigate(0)}>
-                    <RefreshCcw className="h-4 w-4" />
-                  </Button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="md:col-span-2"
+        >
+          <Card className="h-full">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Purchase History</CardTitle>
+                  <CardDescription>Your recent transactions</CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex justify-center py-6">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-shop-blue"></div>
-                  </div>
-                ) : purchases.length > 0 ? (
-                  <div className="space-y-4">
-                    {purchases.slice(0, 5).map((purchase) => (
-                      <div key={purchase.id}>
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center">
-                            <ShoppingBag className="mr-3 h-5 w-5 text-gray-500" />
-                            <div>
-                              <p className="font-medium">{purchase.product_name}</p>
-                              <p className="text-xs text-gray-500">{formatDate(purchase.created_at)}</p>
-                            </div>
+                <Button variant="outline" size="icon" onClick={() => navigate(0)}>
+                  <RefreshCcw className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center py-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-shop-blue"></div>
+                </div>
+              ) : purchases.length > 0 ? (
+                <div className="space-y-4">
+                  {purchases.slice(0, 5).map((purchase) => (
+                    <div key={purchase.id}>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <ShoppingBag className="mr-3 h-5 w-5 text-gray-500" />
+                          <div>
+                            <p className="font-medium">{purchase.product_name}</p>
+                            <p className="text-xs text-gray-500">{formatDate(purchase.created_at)}</p>
                           </div>
-                          <p className="font-semibold text-red-500">-{formatCurrency(purchase.amount)}</p>
                         </div>
-                        <Separator className="my-3" />
+                        <p className="font-semibold text-red-500">-{formatCurrency(purchase.amount)}</p>
                       </div>
-                    ))}
-                    {purchases.length > 5 && (
-                      <Button variant="link" className="w-full" onClick={() => navigate("/purchases")}>
-                        View all transactions
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <AlertCircle className="mx-auto h-10 w-10 text-gray-400 mb-3" />
-                    <p className="text-gray-500">No purchase history found</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-bold mb-4">Need help?</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            If you need assistance with your wallet, purchases, or have any other questions, please feel free to contact our support team.
-          </p>
-          <Button 
-            variant="outline" 
-            onClick={() => window.open("https://t.me/yowxios", "_blank")}
-          >
-            Contact Support
-          </Button>
-        </div>
+                      <Separator className="my-3" />
+                    </div>
+                  ))}
+                  {purchases.length > 5 && (
+                    <Button variant="link" className="w-full" onClick={() => navigate("/history")}>
+                      View all transactions
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <AlertCircle className="mx-auto h-10 w-10 text-gray-400 mb-3" />
+                  <p className="text-gray-500">No purchase history found</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
-    </MainLayout>
+      
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold mb-4">Need help?</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">
+          If you need assistance with your wallet, purchases, or have any other questions, please feel free to contact our support team.
+        </p>
+        <Button 
+          variant="outline" 
+          onClick={() => window.open("https://t.me/yowxios", "_blank")}
+        >
+          Contact Support
+        </Button>
+      </div>
+    </div>
   );
 };
 
