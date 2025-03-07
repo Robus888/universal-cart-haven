@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
@@ -23,7 +23,7 @@ const App = () => {
   return (
     <div className="app-container min-h-screen flex flex-col">
       <Routes>
-        <Route path="/" element={<MainLayout />}>
+        <Route element={<MainLayout children={<Outlet />} />}>
           <Route index element={<Index />} />
           <Route path="shop" element={<Shop />} />
           <Route path="shop/:productId" element={<ProductDetail />} />
