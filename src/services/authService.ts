@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { User, PromoCode } from "@/types/shop";
 import { toast } from "@/components/ui/use-toast";
@@ -27,6 +28,27 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
         return null;
       }
       
+      // Get IP address for the user
+      let ipAddress = "181.224.230.187"; // Default IP as a fallback
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const ipData = await response.json();
+        if (ipData && ipData.ip) {
+          ipAddress = ipData.ip;
+        }
+      } catch (ipError) {
+        console.error("Error fetching IP:", ipError);
+      }
+      
+      // Detect OS
+      const userAgent = navigator.userAgent;
+      let os = "Unknown";
+      if (userAgent.indexOf("Win") !== -1) os = "Windows";
+      else if (userAgent.indexOf("Mac") !== -1) os = "MacOS";
+      else if (userAgent.indexOf("Linux") !== -1) os = "Linux";
+      else if (userAgent.indexOf("Android") !== -1) os = "Android";
+      else if (userAgent.indexOf("iOS") !== -1) os = "iOS";
+      
       const userData: User = {
         id: data.id,
         username: data.username || 'User',
@@ -36,6 +58,9 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
         is_owner: !!data.is_owner,
         banned: !!data.banned,
         last_username_change: data.last_username_change || null,
+        ip_address: ipAddress,
+        os: os,
+        join_date: data.created_at || new Date().toISOString(),
       };
       
       return userData;
@@ -70,6 +95,27 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
           .maybeSingle();
           
         if (newProfile) {
+          // Get IP address for the user
+          let ipAddress = "181.224.230.187"; // Default IP as a fallback
+          try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const ipData = await response.json();
+            if (ipData && ipData.ip) {
+              ipAddress = ipData.ip;
+            }
+          } catch (ipError) {
+            console.error("Error fetching IP:", ipError);
+          }
+          
+          // Detect OS
+          const userAgent = navigator.userAgent;
+          let os = "Unknown";
+          if (userAgent.indexOf("Win") !== -1) os = "Windows";
+          else if (userAgent.indexOf("Mac") !== -1) os = "MacOS";
+          else if (userAgent.indexOf("Linux") !== -1) os = "Linux";
+          else if (userAgent.indexOf("Android") !== -1) os = "Android";
+          else if (userAgent.indexOf("iOS") !== -1) os = "iOS";
+          
           const userData: User = {
             id: newProfile.id,
             username: newProfile.username || 'User',
@@ -79,6 +125,9 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
             is_owner: !!newProfile.is_owner,
             banned: !!newProfile.banned,
             last_username_change: newProfile.last_username_change || null,
+            ip_address: ipAddress,
+            os: os,
+            join_date: newProfile.created_at || new Date().toISOString(),
           };
           
           return userData;
@@ -180,10 +229,16 @@ export const logout = async (): Promise<boolean> => {
       throw error;
     }
     
+    // Clear any local storage that might have user data
+    localStorage.removeItem("user");
+    
     toast({
       title: "Logged out",
       description: "You have been successfully logged out",
     });
+    
+    // Redirect to the login page
+    window.location.href = "/login";
     
     return true;
   } catch (error) {

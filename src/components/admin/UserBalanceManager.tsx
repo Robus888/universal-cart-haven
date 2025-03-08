@@ -5,13 +5,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, AlertTriangle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 interface Profile {
   id: string;
   username: string;
   email: string;
   balance: number;
+  is_admin?: boolean;
+  is_owner?: boolean;
 }
 
 const UserBalanceManager: React.FC = () => {
@@ -20,6 +24,7 @@ const UserBalanceManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // New balance amount to set
@@ -46,6 +51,7 @@ const UserBalanceManager: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       
       const { data, error } = await supabase
         .from("profiles")
@@ -70,6 +76,7 @@ const UserBalanceManager: React.FC = () => {
       console.log("Fetched users:", userProfiles);
     } catch (error) {
       console.error("Error fetching users:", error);
+      setError("Failed to load users. Please try again.");
       toast({
         variant: "destructive",
         title: "Error",
@@ -155,6 +162,15 @@ const UserBalanceManager: React.FC = () => {
     });
   };
 
+  const getRoleBadge = (user: Profile) => {
+    if (user.is_owner) {
+      return <Badge className="bg-amber-500 hover:bg-amber-600">Owner</Badge>;
+    } else if (user.is_admin) {
+      return <Badge className="bg-blue-500 hover:bg-blue-600">Admin</Badge>;
+    }
+    return null;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -186,7 +202,31 @@ const UserBalanceManager: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-4">Loading users...</div>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-4 border rounded-md">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                  <div className="mb-2 sm:mb-0">
+                    <Skeleton className="h-4 w-40 mb-2" />
+                    <Skeleton className="h-3 w-32 mb-1" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <div className="flex items-center space-x-2 w-full sm:w-auto">
+                    <Skeleton className="h-9 w-32" />
+                    <Skeleton className="h-9 w-16" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500 flex flex-col items-center gap-2">
+            <AlertTriangle className="h-8 w-8" />
+            <p className="font-medium">{error}</p>
+            <Button variant="outline" onClick={fetchUsers} className="mt-2">
+              Try Again
+            </Button>
+          </div>
         ) : filteredUsers.length === 0 ? (
           <div className="text-center py-4">No users found</div>
         ) : (
@@ -197,7 +237,10 @@ const UserBalanceManager: React.FC = () => {
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-md"
               >
                 <div className="mb-2 sm:mb-0">
-                  <p className="font-medium">{user.username || 'No username'}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{user.username || 'No username'}</p>
+                    {getRoleBadge(user)}
+                  </div>
                   <p className="text-sm text-gray-500">{user.email || 'No email'}</p>
                   <p className="text-xs text-gray-500">Current balance: ${user.balance?.toFixed(2) || '0.00'}</p>
                 </div>

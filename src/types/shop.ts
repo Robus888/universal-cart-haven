@@ -11,6 +11,9 @@ export type User = {
   is_owner?: boolean;
   banned?: boolean;
   last_username_change?: string | null;
+  ip_address?: string;
+  os?: string;
+  join_date?: string;
 };
 
 export type Product = {

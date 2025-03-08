@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserBalanceManager from "./UserBalanceManager";
-import AnnouncementManager from "./AnnouncementManager";
 import { useShop } from "@/contexts/ShopContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -48,18 +47,7 @@ const AdminPanel: React.FC = () => {
         )}
       </div>
 
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="balance">User Balances</TabsTrigger>
-          <TabsTrigger value="announcement">Announcements</TabsTrigger>
-        </TabsList>
-        <TabsContent value="balance">
-          <UserBalanceManager />
-        </TabsContent>
-        <TabsContent value="announcement">
-          <AnnouncementManager />
-        </TabsContent>
-      </Tabs>
+      <UserBalanceManager />
     </div>
   );
 };

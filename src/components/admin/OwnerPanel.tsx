@@ -6,14 +6,38 @@ import UserBanManager from "./UserBanManager";
 import UserBalanceManager from "./UserBalanceManager";
 import AnnouncementManager from "./AnnouncementManager";
 import PromoCodeManager from "./PromoCodeManager";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const OwnerPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState("balance");
-  const { getTranslation } = useShop();
+  const { getTranslation, user } = useShop();
+  const navigate = useNavigate();
+
+  if (!user?.is_owner) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p className="font-bold">Access Denied</p>
+          <p>You don't have permission to access the owner panel.</p>
+        </div>
+        <Button className="mt-4" onClick={() => navigate("/")}>
+          Return to Home
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">{getTranslation("ownerPanel")}</h2>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center mb-6">
+        <Button variant="ghost" className="mr-2" onClick={() => navigate("/")}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        <h1 className="text-2xl font-bold">{getTranslation("ownerPanel")}</h1>
+      </div>
       
       <Tabs defaultValue="balance" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full justify-start mb-6 overflow-x-auto">

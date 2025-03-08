@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route, Outlet, Navigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
@@ -23,6 +23,30 @@ import { useShop } from "@/contexts/ShopContext";
 const App = () => {
   const { isAuthenticated, user } = useShop();
   
+  // Protected route component
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
+    return <>{children}</>;
+  };
+
+  // Admin route component  
+  const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+    if (!isAuthenticated || !user?.is_admin) {
+      return <Navigate to="/" replace />;
+    }
+    return <>{children}</>;
+  };
+
+  // Owner route component
+  const OwnerRoute = ({ children }: { children: React.ReactNode }) => {
+    if (!isAuthenticated || !user?.is_owner) {
+      return <Navigate to="/" replace />;
+    }
+    return <>{children}</>;
+  };
+  
   return (
     <div className="app-container min-h-screen flex flex-col">
       <Routes>
@@ -37,31 +61,36 @@ const App = () => {
           <Route path="payment-methods" element={<PaymentMethods />} />
           <Route path="history" element={<OrderHistory />} />
           
-          {/* Protected routes - only accessible when authenticated */}
-          {isAuthenticated && (
-            <>
-              <Route path="wallet" element={<Wallet />} />
-              <Route path="downloads" element={<Downloads />} />
-              
-              {/* Admin routes */}
-              {user?.is_admin && (
-                <Route path="admin" element={<AdminPanel />} />
-              )}
-              
-              {/* Owner routes */}
-              {user?.is_owner && (
-                <Route path="owner" element={<OwnerPanel />} />
-              )}
-            </>
-          )}
+          {/* Protected routes */}
+          <Route path="wallet" element={
+            <ProtectedRoute>
+              <Wallet />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="downloads" element={
+            <ProtectedRoute>
+              <Downloads />
+            </ProtectedRoute>
+          } />
+          
+          {/* Admin routes */}
+          <Route path="admin" element={
+            <AdminRoute>
+              <AdminPanel />
+            </AdminRoute>
+          } />
+          
+          {/* Owner routes */}
+          <Route path="owner" element={
+            <OwnerRoute>
+              <OwnerPanel />
+            </OwnerRoute>
+          } />
           
           {/* Auth routes - not accessible when authenticated */}
-          {!isAuthenticated && (
-            <>
-              <Route path="login" element={<Login />} />
-              <Route path="register" element={<Register />} />
-            </>
-          )}
+          <Route path="login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
+          <Route path="register" element={isAuthenticated ? <Navigate to="/" /> : <Register />} />
           
           <Route path="*" element={<NotFound />} />
         </Route>
