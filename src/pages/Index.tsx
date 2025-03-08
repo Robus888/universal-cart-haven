@@ -33,17 +33,6 @@ const Index = () => {
           {getTranslation("tagline")}
         </p>
         
-        <div className="video-container mb-10">
-          <video 
-            src="/videos/yowxpanel.mp4" 
-            className="w-full rounded-xl shadow-xl rainbow-border"
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
-          />
-        </div>
-        
         <div className="flex justify-center items-center">
           <Link to="/shop" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded shadow">
             {getTranslation("shopNow")}
