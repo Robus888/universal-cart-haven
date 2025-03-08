@@ -1,6 +1,6 @@
 
 export type Currency = "USD" | "EUR" | "GBP";
-export type Language = "English" | "Spanish";
+export type Language = "English" | "Spanish" | "Portuguese" | "Vietnamese" | "Russian" | "Arabic";
 
 export type User = {
   id: string;

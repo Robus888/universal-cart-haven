@@ -58,6 +58,23 @@ const Index = () => {
             Discover premium digital products tailored for gamers and tech enthusiasts. 
             Our curated collection brings you the best in gaming, productivity, and digital assets.
           </motion.p>
+
+          <motion.div
+            className="relative w-full max-w-4xl mx-auto mb-12 rounded-xl overflow-hidden shadow-xl"
+            variants={fadeInUp}
+          >
+            <video 
+              className="w-full h-auto" 
+              autoPlay 
+              muted 
+              loop 
+              playsInline
+              controls
+            >
+              <source src="/videos/yowx.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </motion.div>
         </div>
         
         <motion.div 

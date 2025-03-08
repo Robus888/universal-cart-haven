@@ -18,7 +18,7 @@ type Purchase = {
 }
 
 const Downloads: React.FC = () => {
-  const { user, isAuthenticated, products } = useShop();
+  const { user, isAuthenticated, products, getTranslation } = useShop();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
@@ -120,7 +120,7 @@ const Downloads: React.FC = () => {
                         className="flex-1 bg-shop-blue hover:bg-shop-darkBlue"
                       >
                         <Download className="mr-2 h-4 w-4" />
-                        Download IPA
+                        {getTranslation("downloadIPA")}
                       </Button>
                       {product && (
                         <Button 
@@ -140,10 +140,12 @@ const Downloads: React.FC = () => {
       ) : (
         <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">No downloads available</h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">You haven't purchased any products yet.</p>
+          <h2 className="text-xl font-semibold mb-2">{getTranslation("noDownloads")}</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            {getTranslation("noDownloads")}
+          </p>
           <Button onClick={() => navigate("/shop")} className="bg-shop-blue hover:bg-shop-darkBlue">
-            Browse Shop
+            {getTranslation("browseShop")}
           </Button>
         </div>
       )}
@@ -164,7 +166,7 @@ const Downloads: React.FC = () => {
                   onClick={() => window.open(getDownloadLinks(selectedProduct).downloadIpa, "_blank")}
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Download IPA Now
+                  {getTranslation("downloadIPA")}
                 </Button>
                 <Button 
                   variant="outline"
@@ -172,7 +174,7 @@ const Downloads: React.FC = () => {
                   onClick={() => window.open(getDownloadLinks(selectedProduct).requestKey, "_blank")}
                 >
                   <ExternalLink className="mr-2 h-4 w-4" />
-                  Request Key
+                  {getTranslation("requestKey")}
                 </Button>
               </>
             )}

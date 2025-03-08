@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,8 +56,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Load language preference from localStorage
   useEffect(() => {
     const savedLanguage = localStorage.getItem("language");
-    if (savedLanguage && (savedLanguage === "English" || savedLanguage === "Spanish")) {
-      setLanguageState(savedLanguage);
+    if (savedLanguage && (
+      savedLanguage === "English" || 
+      savedLanguage === "Spanish" || 
+      savedLanguage === "Portuguese" || 
+      savedLanguage === "Vietnamese" || 
+      savedLanguage === "Russian" || 
+      savedLanguage === "Arabic"
+    )) {
+      setLanguageState(savedLanguage as Language);
     }
   }, []);
 

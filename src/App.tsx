@@ -12,6 +12,7 @@ import Wallet from "@/pages/Wallet";
 import Downloads from "@/pages/Downloads";
 import NotFound from "@/pages/NotFound";
 import AdminPanel from "@/components/admin/AdminPanel";
+import OwnerPanel from "@/components/admin/OwnerPanel";
 import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import PromoCodes from "@/pages/PromoCodes";
@@ -42,9 +43,14 @@ const App = () => {
               <Route path="wallet" element={<Wallet />} />
               <Route path="downloads" element={<Downloads />} />
               
-              {/* Admin/Owner routes */}
+              {/* Admin routes */}
               {user?.is_admin && (
                 <Route path="admin" element={<AdminPanel />} />
+              )}
+              
+              {/* Owner routes */}
+              {user?.is_owner && (
+                <Route path="owner" element={<OwnerPanel />} />
               )}
             </>
           )}
