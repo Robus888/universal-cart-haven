@@ -25,6 +25,8 @@ export const processCartPayment = async (
   }
 
   const total = calculateCartTotal(cart);
+  console.log("Processing cart payment with total:", total);
+  
   if (user.balance < total) {
     toast({
       variant: "destructive",
@@ -34,12 +36,10 @@ export const processCartPayment = async (
     return false;
   }
 
-  try {
-    console.log("Processing payment with total:", total);
-    console.log("Current user balance:", user.balance);
-    
+  try {    
     // Update user balance in Supabase
     const newBalance = user.balance - total;
+    console.log("Current balance:", user.balance);
     console.log("New balance will be:", newBalance);
     
     const { error: updateError } = await supabase
@@ -69,13 +69,7 @@ export const processCartPayment = async (
         });
     });
     
-    const results = await Promise.all(purchasePromises);
-    
-    for (const { error } of results) {
-      if (error) {
-        console.error("Error recording purchase:", error);
-      }
-    }
+    await Promise.all(purchasePromises);
     
     // Update local user state
     const updatedUser = {
@@ -182,7 +176,9 @@ export const purchaseProduct = async (
     });
     
     // Open the download link in a new tab
-    window.open(product.downloadLink || "#", "_blank");
+    if (product.downloadLink) {
+      window.open(product.downloadLink, "_blank");
+    }
     
     return true;
   } catch (error) {

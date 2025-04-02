@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { X, ShoppingCart, ArrowLeft, CreditCard, AlertCircle, Trash2 } from "lucide-react";
+import { ShoppingCart, ArrowLeft, CreditCard, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 const Cart: React.FC = () => {
@@ -30,21 +30,45 @@ const Cart: React.FC = () => {
     }).format(price);
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please log in to complete your purchase",
+      });
       navigate("/login");
       return;
     }
     
+    if (user && user.banned) {
+      toast({
+        variant: "destructive",
+        title: "Account banned",
+        description: "Your account has been banned. Please contact support.",
+      });
+      return;
+    }
+    
     try {
-      const success = await processCartPayment();
-      if (success) {
-        toast({
-          title: "Payment successful",
-          description: `Your purchase was completed. You can now download your items.`,
+      processCartPayment()
+        .then((success) => {
+          if (success) {
+            toast({
+              title: "Payment successful",
+              description: `Your purchase was completed. You can now download your items.`,
+            });
+            navigate("/downloads");
+          }
+        })
+        .catch((error) => {
+          console.error("Checkout error:", error);
+          toast({
+            variant: "destructive",
+            title: "Payment failed",
+            description: "There was an error processing your payment. Please try again.",
+          });
         });
-        navigate("/downloads");
-      }
     } catch (error) {
       console.error("Checkout error:", error);
       toast({

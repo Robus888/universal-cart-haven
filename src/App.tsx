@@ -19,6 +19,7 @@ import PromoCodes from "@/pages/PromoCodes";
 import PaymentMethods from "@/pages/PaymentMethods";
 import OrderHistory from "@/pages/OrderHistory";
 import { useShop } from "@/contexts/ShopContext";
+import SnowflakeContainer from "@/components/effects/SnowflakeContainer";
 
 const App = () => {
   const { isAuthenticated, user } = useShop();
@@ -49,6 +50,7 @@ const App = () => {
   
   return (
     <div className="app-container min-h-screen flex flex-col">
+      <SnowflakeContainer count={20} />
       <Routes>
         <Route element={<MainLayout children={<Outlet />} />}>
           <Route index element={<Index />} />
