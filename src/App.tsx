@@ -18,6 +18,7 @@ import Settings from "@/pages/Settings";
 import PromoCodes from "@/pages/PromoCodes";
 import PaymentMethods from "@/pages/PaymentMethods";
 import OrderHistory from "@/pages/OrderHistory";
+import Blackjack from "@/pages/games/Blackjack";
 import { useShop } from "@/contexts/ShopContext";
 import SnowflakeContainer from "@/components/effects/SnowflakeContainer";
 
@@ -50,7 +51,7 @@ const App = () => {
   
   return (
     <div className="app-container min-h-screen flex flex-col">
-      <SnowflakeContainer count={20} />
+      <SnowflakeContainer count={60} />
       <Routes>
         <Route element={<MainLayout children={<Outlet />} />}>
           <Route index element={<Index />} />
@@ -73,6 +74,13 @@ const App = () => {
           <Route path="downloads" element={
             <ProtectedRoute>
               <Downloads />
+            </ProtectedRoute>
+          } />
+          
+          {/* Games routes */}
+          <Route path="games/blackjack" element={
+            <ProtectedRoute>
+              <Blackjack />
             </ProtectedRoute>
           } />
           

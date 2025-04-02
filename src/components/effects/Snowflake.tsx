@@ -64,8 +64,8 @@ const Snowflake: React.FC<SnowflakeProps> = ({
     };
   }, [speedFactor, controls]);
   
-  // Use appropriate color based on theme
-  const snowflakeColor = isDarkMode ? "#ffffff" : "#a0c4e4";
+  // Use appropriate color based on theme with increased opacity
+  const snowflakeColor = isDarkMode ? "#ffffff" : "#c0e0ff";
 
   return (
     <motion.div
@@ -80,7 +80,7 @@ const Snowflake: React.FC<SnowflakeProps> = ({
         borderRadius: '50%',
         backgroundColor: color || snowflakeColor,
         boxShadow: `0 0 ${size/2}px ${color || snowflakeColor}`,
-        opacity: 0.7,
+        opacity: 0.8,
         zIndex: 50,
         pointerEvents: 'none'
       }}

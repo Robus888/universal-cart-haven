@@ -2,7 +2,7 @@
 import React from "react";
 import { useShop } from "@/contexts/ShopContext";
 import { NavLink } from "react-router-dom";
-import { Home, ShoppingCart, Clock, Award, Download, CreditCard, Wallet, X, User, Settings, LogOut, Tag } from "lucide-react";
+import { Home, ShoppingCart, Clock, Award, Download, CreditCard, Wallet, X, User, Settings, LogOut, Tag, GamepadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -89,6 +89,16 @@ const Sidebar: React.FC = () => {
             </nav>
           </div>
 
+          {/* New Games Section */}
+          <div className="space-y-1">
+            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-950">
+              Games
+            </p>
+            <nav className="space-y-1">
+              <SidebarItem to="/games/blackjack" icon={<GamepadIcon size={18} />} label="Blackjack" />
+            </nav>
+          </div>
+
           <div className="space-y-1">
             <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-950">
               {getTranslation("paymentMethods")}
@@ -118,6 +128,18 @@ const Sidebar: React.FC = () => {
                 <Settings size={18} />
                 <span>{getTranslation("settings")}</span>
               </NavLink>
+              {user?.is_admin && (
+                <NavLink to="/admin" className="sidebar-item" onClick={handleCloseSidebar}>
+                  <Award size={18} />
+                  <span>Admin Panel</span>
+                </NavLink>
+              )}
+              {user?.is_owner && (
+                <NavLink to="/owner" className="sidebar-item" onClick={handleCloseSidebar}>
+                  <Award size={18} />
+                  <span>Owner Panel</span>
+                </NavLink>
+              )}
               <button className="sidebar-item w-full text-left text-red-500 hover:bg-red-500/10" onClick={logout}>
                 <LogOut size={18} />
                 <span>{getTranslation("logout")}</span>

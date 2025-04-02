@@ -18,14 +18,13 @@ const Login: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center bg-cover bg-center" 
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative" 
       style={{ backgroundImage: `url('https://images8.alphacoders.com/137/1377793.png')` }}
     >
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       <div className="relative z-10 w-full max-w-md">
         <LoginForm />
       </div>
-      <SnowflakeContainer count={50} />
     </div>
   );
 };
